@@ -3,7 +3,7 @@ from asteroid.serializers import BriefAsteroidSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .calculations import test_calculation
+from .services import normalize_params
 
 
 class AsteroidListView(APIView):
@@ -11,22 +11,13 @@ class AsteroidListView(APIView):
     serializers = BriefAsteroidSerializer
 
 
-class SimulationsListView(APIView):
-    def get(self, request):
-        data = test_calculation("test")
-
-        if False:
-            return Response({"data": request.data}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({"data": data}, status=status.HTTP_200_OK)
+class SimulationsComputeView(APIView):
+    def post(self, request):
+        raw_params = request.data["inputs"]
+        normalized_params = normalize_params(raw_params)
+        simulation_id = compute_simulation_id(normalized_params)
 
 
-class SimulationDetailsView(APIView):
+class SimulationsFetchView(APIView):
     def get(self, request, simulation_id):
-        data = test_calculation(simulation_id)
-
-
-        if False:
-            return Response({"data": request.data}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({"data": data}, status=status.HTTP_200_OK)
+        pass
