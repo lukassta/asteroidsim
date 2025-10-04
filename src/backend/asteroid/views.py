@@ -1,8 +1,9 @@
 from asteroid.models import Asteroid
 from asteroid.serializers import BriefAsteroidSerializer
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from .calculations import test_calculation
 
 
@@ -24,7 +25,6 @@ class SimulationsListView(APIView):
 class SimulationDetailsView(APIView):
     def get(self, request, simulation_id):
         data = test_calculation(simulation_id)
-
 
         if False:
             return Response({"data": request.data}, status=status.HTTP_400_BAD_REQUEST)
