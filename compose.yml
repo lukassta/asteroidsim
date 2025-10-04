@@ -17,3 +17,4 @@ services:
      - "$DJANGO_PORT:$DJANGO_PORT"
    volumes:
      - ./src/backend:/app
+     - ./datasets:/datasets
