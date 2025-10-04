@@ -1,3 +1,8 @@
 Django==5.1.12
 djangorestframework==3.16.1
+geopandas==1.1.1
 gunicorn==23.0.0
+numpy==2.3.3
+pyproj==3.7.2
+rioxarray==0.19.0
+shapely==2.1.2
