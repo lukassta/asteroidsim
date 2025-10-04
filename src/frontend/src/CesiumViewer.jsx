@@ -41,7 +41,6 @@ function CesiumViewer() {
             destination: Cesium.Cartesian3.fromDegrees(0, 20, 20000000),
         })
 
-
         // Cleanup
         return () => {
             if (viewerRef.current) {

@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useCesium } from '../context/CesiumContext';
 import * as Cesium from 'cesium';
 import InfoCard from '../components/InfoCard';
 
 const HomePage = () => {
   const { viewer } = useCesium();
+  const selectedPointRef = useRef(null);
 
   useEffect(() => {
     if (!viewer) return;
@@ -44,6 +45,61 @@ const HomePage = () => {
     
     // Clear translate event types to prevent panning
     viewer.scene.screenSpaceCameraController.translateEventTypes = [];
+
+    // Add click handler for picking locations on the globe
+    const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+    handler.setInputAction((click) => {
+      // Use scene.pickPosition for more accurate terrain-aware picking
+      const pickedPosition = viewer.scene.pickPosition(click.position);
+      
+      // Fallback to camera.pickEllipsoid if pickPosition doesn't return a valid position
+      const cartesian = pickedPosition || viewer.camera.pickEllipsoid(
+        click.position,
+        viewer.scene.globe.ellipsoid
+      );
+
+      if (cartesian) {
+        // Convert cartesian to cartographic (lat/lon)
+        const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+        const longitude = Cesium.Math.toDegrees(cartographic.longitude);
+        const latitude = Cesium.Math.toDegrees(cartographic.latitude);
+        const height = cartographic.height;
+
+        console.log(`Clicked location: Lat: ${latitude.toFixed(6)}, Lon: ${longitude.toFixed(6)}, Height: ${height.toFixed(2)}m`);
+
+        // Remove previous point if it exists
+        if (selectedPointRef.current) {
+          viewer.entities.remove(selectedPointRef.current);
+        }
+
+        // Add a high-quality point entity at the clicked location
+        selectedPointRef.current = viewer.entities.add({
+          position: cartesian,
+          point: {
+            pixelSize: 12,
+            color: Cesium.Color.fromCssColorString('#FF4444'),
+            outlineColor: Cesium.Color.WHITE,
+            outlineWidth: 3,
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY, // Always visible
+            scaleByDistance: new Cesium.NearFarScalar(1.0e3, 1.5, 1.0e7, 0.5), // Scale based on distance
+          },
+          description: `Latitude: ${latitude.toFixed(6)}°<br/>Longitude: ${longitude.toFixed(6)}°<br/>Height: ${height.toFixed(2)}m`
+        });
+      }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+    // Cleanup
+    return () => {
+      if (handler) {
+        handler.destroy();
+      }
+      // Remove point when leaving the page
+      if (selectedPointRef.current) {
+        viewer.entities.remove(selectedPointRef.current);
+        selectedPointRef.current = null;
+      }
+    };
   }, [viewer]);
 
   return (
