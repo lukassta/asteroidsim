@@ -26,14 +26,18 @@ const preMadeAsteroids = [
     { name: 'Custom' },
 ]
 
-const structureOptions = ['Water-based', 'Sedimentary', 'Crystalline']
+const structureOptions = [
+    { label: 'Water-based rock', value: 'water-based' },
+    { label: 'Sedimentary rock', value: 'sedimentary' },
+    { label: 'Crystalline rock', value: 'crystalline' }
+]
 
 const AsteroidControlPanel = ({ onLaunch }) => {
     const [selectedAsteroid, setSelectedAsteroid] = useState('Apophis')
     const [diameter, setDiameter] = useState(100)
     const [density, setDensity] = useState(3000)
     const [velocity, setVelocity] = useState(20000)
-    const [structure, setStructure] = useState('Sedimentary')
+    const [structure, setStructure] = useState('sedimentary')
     const [entryAngle, setEntryAngle] = useState(90)
     const [azimuth, setAzimuth] = useState(0)
     const [lat, setLat] = useState(0)
@@ -60,6 +64,7 @@ const AsteroidControlPanel = ({ onLaunch }) => {
             entryAngle,
             azimuth,
             aimPoint: { lat, lon },
+            materialType: structure,
         })
     }
 
@@ -175,8 +180,8 @@ const AsteroidControlPanel = ({ onLaunch }) => {
                             </SelectTrigger>
                             <SelectContent className="bg-slate-900 text-slate-200 border-slate-600 z-[100]" sideOffset={5}>
                                 {structureOptions.map((type) => (
-                                    <SelectItem key={type} value={type}>
-                                        {type}
+                                    <SelectItem key={type.value} value={type.value}>
+                                        {type.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -230,18 +235,6 @@ const AsteroidControlPanel = ({ onLaunch }) => {
                            [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                         </div>
-                        <p className="text-xs text-slate-400">
-                            Asteroid will enter earths atmosphere at Aim Point.
-                            </p>
-                        <p className="text-xs text-slate-400">
-                            To drop the asteroid at Aim Point:
-                            </p>
-                        <p className="text-xs text-slate-400">
-                            Horizontal = 90°
-                            </p>
-                        <p className="text-xs text-slate-400">
-                            Azimuth = 0°
-                        </p>
                     </div>
                 </CardContent>
 

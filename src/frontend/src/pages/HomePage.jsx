@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCesium } from '../context/CesiumContext';
 import * as Cesium from 'cesium';
 import InfoCard from '../components/InfoCard';
@@ -6,6 +7,7 @@ import { Button } from '../components/ui/button';
 
 const HomePage = () => {
   const { viewer } = useCesium();
+  const navigate = useNavigate();
   const selectedPointRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
 
@@ -114,7 +116,8 @@ const HomePage = () => {
 
   const handleSimulate = () => {
     console.log('Simulating impact at:', selectedLocation);
-    // TODO: Navigate to simulation page or trigger simulation
+    // Navigate to asteroid selection page with location data
+    navigate('/asteroid-select', { state: { impactLocation: selectedLocation } });
   };
 
   return (

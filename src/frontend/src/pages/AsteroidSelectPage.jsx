@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useCesium } from '../context/CesiumContext';
 import * as Cesium from 'cesium';
 import InfoCard from '../components/InfoCard';
@@ -6,10 +7,13 @@ import AsteroidParameterPanel from '../components/AsteroidParameterPanel';
 
 const AsteroidSelectPage = () => {
   const { viewer } = useCesium();
+  const location = useLocation();
+  const impactLocation = location.state?.impactLocation;
 
   // Prototype onLaunch function
-  const handleAsteroidLaunch = (params) => {
+  const handleAsteroidLaunch = async (params) => {
     console.log('Launching asteroid with parameters:', params);
+    console.log('Impact location:', impactLocation);
     
     if (!viewer) {
       console.error('Cesium viewer not initialized');
@@ -17,19 +21,44 @@ const AsteroidSelectPage = () => {
     }
 
     // Extract parameters
-    const { diameter, density, velocityKm, entryAngle, azimuth, aimPoint } = params;
+    const { diameter, density, velocityKm, entryAngle, azimuth, aimPoint, materialType } = params;
     
-    // Calculate mass from diameter and density
-    const radius = diameter / 2;
-    const volume = (4/3) * Math.PI * Math.pow(radius, 3);
-    const mass = volume * density;
-    
-    // Log calculated values
-    console.log('Calculated mass:', mass.toFixed(2), 'kg');
-    console.log('Velocity:', velocityKm, 'km/s');
-    console.log('Entry angle:', entryAngle, '° (horizontal)');
-    console.log('Azimuth:', azimuth, '°');
-    console.log('Aim point:', aimPoint);
+    // Format data according to API specification
+    const requestData = {
+      inputs: {
+        diameter_m: diameter,
+        density_kg_m3: density,
+        material_type: materialType || "sedimentary rock",
+        entry_speed_m_s: velocityKm * 1000, // Convert km/s to m/s
+        entry_angle_deg: entryAngle,
+        azimuth_deg: azimuth,
+        aim_point: {
+          lat: aimPoint?.lat || impactLocation?.latitude || 0,
+          lon: aimPoint?.lon || impactLocation?.longitude || 0
+        }
+      }
+    };
+
+    console.log('Sending data to API:', requestData);
+
+    try {
+      const response = await fetch('/api/simulations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('API response:', result);
+      return result;
+    } catch (error) {
+      console.error('Error sending data to API:', error);
+      throw error;
+    }
   };
 
   useEffect(() => {
