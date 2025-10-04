@@ -11,12 +11,12 @@ urlpatterns = [
     ),
     path(
         "api/simulations/",
-        views.SimulationsList.as_view(),
+        views.SimulationsListView.as_view(),
         name="simulations_list_view",
     ),
     path(
-        "api/asteroid/<int:volunteering_position_id>/",
-        views.SikulationDetailsView.as_view(),
+        "api/simulations/<int:simulation_id>/",
+        views.SimulationDetailsView.as_view(),
         name="simulation_details_view",
     ),
 ]
