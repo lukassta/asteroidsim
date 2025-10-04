@@ -29,10 +29,10 @@ const NavigationBar = () => {
               Simulation
             </a>
             <a 
-              href="#data" 
+              href="#asteroid-select" 
               className="text-gray-300 hover:text-white transition-colors duration-200 font-medium"
             >
-              Data
+              Asteroid select
             </a>
             <a 
               href="#about" 
