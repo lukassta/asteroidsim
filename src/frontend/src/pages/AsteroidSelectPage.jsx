@@ -28,7 +28,7 @@ const AsteroidSelectPage = () => {
       inputs: {
         diameter_m: diameter,
         density_kg_m3: density,
-        material_type: materialType || "sedimentary rock",
+        material_type: materialType,
         entry_speed_m_s: velocityKm * 1000, // Convert km/s to m/s
         entry_angle_deg: entryAngle,
         azimuth_deg: azimuth,
@@ -145,7 +145,10 @@ const AsteroidSelectPage = () => {
   );*/
 
   return (
-    <AsteroidParameterPanel onLaunch={handleAsteroidLaunch} />
+    <AsteroidParameterPanel 
+      onLaunch={handleAsteroidLaunch} 
+      impactLocation={impactLocation}
+    />
   )
 };
 

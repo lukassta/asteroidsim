@@ -17,7 +17,7 @@ function CesiumViewer() {
         // Create the viewer with aerial imagery and labels
         viewerRef.current = new Cesium.Viewer(cesiumContainer.current, {
             terrain: Cesium.Terrain.fromWorldTerrain(),
-            resolutionScale: window.devicePixelRatio || 1.5,
+            resolutionScale: 1.0,
             scene3DOnly: true,
             baseLayer: Cesium.ImageryLayer.fromProviderAsync(
                 Cesium.IonImageryProvider.fromAssetId(
@@ -45,7 +45,7 @@ function CesiumViewer() {
 
         // Force canvas to render at higher resolution
         const canvas = viewerRef.current.canvas
-        const pixelRatio = 1.5
+        const pixelRatio = 1.0
         const width = canvas.clientWidth
         const height = canvas.clientHeight
 

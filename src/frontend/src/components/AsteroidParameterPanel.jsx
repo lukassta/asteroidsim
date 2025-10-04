@@ -32,7 +32,7 @@ const structureOptions = [
     { label: 'Crystalline rock', value: 'crystalline' }
 ]
 
-const AsteroidControlPanel = ({ onLaunch }) => {
+const AsteroidControlPanel = ({ onLaunch, impactLocation }) => {
     const [selectedAsteroid, setSelectedAsteroid] = useState('Apophis')
     const [diameter, setDiameter] = useState(100)
     const [density, setDensity] = useState(3000)
@@ -40,8 +40,8 @@ const AsteroidControlPanel = ({ onLaunch }) => {
     const [structure, setStructure] = useState('sedimentary')
     const [entryAngle, setEntryAngle] = useState(90)
     const [azimuth, setAzimuth] = useState(0)
-    const [lat, setLat] = useState(0)
-    const [lon, setLon] = useState(0)
+    const [lat, setLat] = useState(impactLocation?.latitude || 0)
+    const [lon, setLon] = useState(impactLocation?.longitude || 0)
 
     // Update parameters when a pre-made asteroid is selected
     const handleAsteroidSelect = (name) => {
