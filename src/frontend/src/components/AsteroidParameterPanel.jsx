@@ -40,7 +40,7 @@ const AsteroidControlPanel = ({ onLaunch }) => {
     }
 
     return (
-        <div className="fixed top-0 right-0 h-screen w-1/4 bg-slate-800/95 backdrop-blur-md border-l border-slate-700/50 shadow-2xl z-10 flex flex-col">
+        <div className="fixed top-16 right-0 h-screen w-1/4 bg-slate-800/95 backdrop-blur-md border-l border-slate-700/50 shadow-2xl z-10 flex flex-col">
             <Card className="flex-1 bg-transparent border-0 shadow-none">
                 <CardHeader>
                     <CardTitle className="text-slate-100 text-lg">Asteroid Parameters</CardTitle>
@@ -79,7 +79,7 @@ const AsteroidControlPanel = ({ onLaunch }) => {
                             <SelectTrigger className="w-full bg-slate-900 text-slate-200 border-slate-600">
                                 <SelectValue placeholder="Select density" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="bg-slate-900 text-slate-200 border-slate-600 z-[100]" sideOffset={5}>
                                 <SelectItem value="3000">Rock (~3000)</SelectItem>
                                 <SelectItem value="2500">Crystal (~2500)</SelectItem>
                                 <SelectItem value="7800">Iron (~7800)</SelectItem>

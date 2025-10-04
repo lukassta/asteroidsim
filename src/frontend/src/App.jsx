@@ -1,4 +1,3 @@
-import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import CesiumViewer from './CesiumViewer.jsx'
 import { CesiumProvider } from './context/CesiumContext'

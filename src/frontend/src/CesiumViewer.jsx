@@ -55,6 +55,7 @@ function CesiumViewer() {
     return (
         <div
             ref={cesiumContainer}
+            id="cesiumContainer"
             style={{
                 position: 'absolute',
                 top: 0,
@@ -64,6 +65,8 @@ function CesiumViewer() {
                 margin: 0,
                 overflow: 'hidden',
                 padding: 0,
+                zIndex: 0,
+                backgroundColor: 'black',
             }}
         />
     )
