@@ -1,0 +1,19 @@
+services:
+ backend:
+   build:
+    context: ./src/backend/.devcontainer
+    dockerfile: Dockerfile
+   container_name: backend-container
+   env_file:
+     - .env
+   environment:
+     DATABASE_NAME: ${DATABASE_NAME}
+     DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
+     DJANGO_DEBUG: ${DJANGO_DEBUG}
+     DJANGO_PORT: ${DJANGO_PORT}
+     DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+     DJANGO_LOGLEVEL: ${DJANGO_LOGLEVEL}
+   ports:
+     - "$DJANGO_PORT:$DJANGO_PORT"
+   volumes:
+     - ./src/backend:/app
