@@ -30,7 +30,6 @@
 - entry angle (from horizontal)
 - azimuth
 - aim point (lat, lon) - surface reference used to place the spawn point directly above at 120 km and to build the local ENU frame; physics then decides the actual airburst/impact location (if entry angle is set to 90 then the impact/airburst will occur at aim point)
-- target surface (water or land)
 
 # How to get trajectory_forward?
 
