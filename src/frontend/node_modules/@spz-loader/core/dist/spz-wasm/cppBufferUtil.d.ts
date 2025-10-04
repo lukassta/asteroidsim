@@ -1,0 +1,9 @@
+import { MainModule, VectorFloat32, VectorUInt8T } from './build/main';
+/**
+ * create new Float32Array from cpp FloatVector
+ * @param wasmModule emscripten main module
+ * @param vec cpp float32 vector
+ * @returns copied float32 array
+ */
+export declare const floatVectorToFloatArray: (wasmModule: MainModule, vec: VectorFloat32, enhancementFunc?: (n: number) => number) => Float32Array;
+export declare const uint8VecToArray: (wasmModule: MainModule, vec: VectorUInt8T) => Uint8Array;
