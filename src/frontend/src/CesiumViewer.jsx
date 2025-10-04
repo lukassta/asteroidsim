@@ -17,10 +17,15 @@ function CesiumViewer() {
         // Create the viewer
         viewerRef.current = new Cesium.Viewer(cesiumContainer.current, {
             terrain: Cesium.Terrain.fromWorldTerrain(),
+            baseLayer: Cesium.ImageryLayer.fromProviderAsync(
+                Cesium.IonImageryProvider.fromAssetId(
+                    3830183
+                )
+            ),
+            baseLayerPicker: false,
             geocoder: false,
             homeButton: false,
             sceneModePicker: false,
-            baseLayerPicker: false,
             navigationHelpButton: false,
             animation: false,
             timeline: false
