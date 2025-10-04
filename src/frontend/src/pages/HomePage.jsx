@@ -1,11 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useCesium } from '../context/CesiumContext';
 import * as Cesium from 'cesium';
 import InfoCard from '../components/InfoCard';
+import { Button } from '../components/ui/button';
 
 const HomePage = () => {
   const { viewer } = useCesium();
   const selectedPointRef = useRef(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   useEffect(() => {
     if (!viewer) return;
@@ -28,7 +30,7 @@ const HomePage = () => {
     // Reset camera to default globe view
     viewer.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(0, 20, 20000000),
-      duration: 2.0
+      duration: 0.0
     });
 
     // Reset camera controls to default for Earth rotation
@@ -67,6 +69,13 @@ const HomePage = () => {
 
         console.log(`Clicked location: Lat: ${latitude.toFixed(6)}, Lon: ${longitude.toFixed(6)}, Height: ${height.toFixed(2)}m`);
 
+        // Store the selected location
+        setSelectedLocation({
+          latitude: latitude.toFixed(6),
+          longitude: longitude.toFixed(6),
+          height: height.toFixed(2)
+        });
+
         // Remove previous point if it exists
         if (selectedPointRef.current) {
           viewer.entities.remove(selectedPointRef.current);
@@ -99,24 +108,68 @@ const HomePage = () => {
         viewer.entities.remove(selectedPointRef.current);
         selectedPointRef.current = null;
       }
+      setSelectedLocation(null);
     };
   }, [viewer]);
 
+  const handleSimulate = () => {
+    console.log('Simulating impact at:', selectedLocation);
+    // TODO: Navigate to simulation page or trigger simulation
+  };
+
   return (
-    <InfoCard
-      title="Welcome to AsteroidSim"
-      description="Explore asteroids and celestial bodies"
-      content={
-        <div>
-          <p className="text-gray-300">
-            Navigate through space and discover the wonders of our solar system.
-            Use the navigation bar above to explore different features.
-          </p>
-        </div>
-      }
-      footer={null}
-      className="w-full max-w-md"
-    />
+    <>
+      {!selectedLocation ? (
+        <InfoCard
+          title="Welcome to AsteroidSim"
+          description="Explore asteroids and celestial bodies"
+          content={
+            <div>
+              <p className="text-gray-300">
+                Placeholder text
+              </p>
+              <p className="text-gray-400 mt-4">
+                Click anywhere on the globe to select an impact location.
+              </p>
+            </div>
+          }
+          footer={null}
+          className="w-full max-w-md"
+        />
+      ) : (
+        <InfoCard
+          title="Selected Location"
+          description="Impact target coordinates"
+          content={
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Latitude:</span>
+                <span className="text-slate-100 font-mono">{selectedLocation.latitude}°</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Longitude:</span>
+                <span className="text-slate-100 font-mono">{selectedLocation.longitude}°</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Elevation:</span>
+                <span className="text-slate-100 font-mono">{selectedLocation.height} m</span>
+              </div>
+            </div>
+          }
+          footer={
+            <div className="w-full flex gap-2">
+              <Button
+                onClick={handleSimulate}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
+                Simulate
+              </Button>
+            </div>
+          }
+          className="w-full max-w-md"
+        />
+      )}
+    </>
   );
 };
 

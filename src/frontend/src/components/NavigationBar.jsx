@@ -28,7 +28,7 @@ const NavigationBar = () => {
             >
               Home
             </NavLink>
-            <NavLink 
+            {/*<NavLink 
               to="/simulation"
               className={({ isActive }) => 
                 `transition-colors duration-200 font-medium cursor-pointer ${
@@ -37,7 +37,7 @@ const NavigationBar = () => {
               }
             >
               Simulation
-            </NavLink>
+            </NavLink>*/}
             <NavLink 
               to="/asteroid-select"
               className={({ isActive }) => 
@@ -48,7 +48,7 @@ const NavigationBar = () => {
             >
               Asteroid select
             </NavLink>
-            <NavLink 
+            {/*<NavLink 
               to="/about"
               className={({ isActive }) => 
                 `transition-colors duration-200 font-medium cursor-pointer ${
@@ -57,7 +57,7 @@ const NavigationBar = () => {
               }
             >
               About
-            </NavLink>
+            </NavLink>*/}
           </div>
         </div>
       </div>
