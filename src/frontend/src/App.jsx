@@ -1,26 +1,28 @@
-import { useState } from 'react'
 import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import CesiumViewer from './CesiumViewer.jsx'
 import { CesiumProvider } from './context/CesiumContext'
-import ControlPanel from './components/ControlPanel.jsx'
-import InfoCard from './components/InfoCard.jsx'
-import { Navigation } from 'lucide-react'
 import NavigationBar from './components/NavigationBar.jsx'
+import HomePage from './pages/HomePage.jsx'
+import SimulationPage from './pages/SimulationPage.jsx'
+import AsteroidSelectPage from './pages/AsteroidSelectPage.jsx'
+import AboutPage from './pages/AboutPage.jsx'
 
 function App() {
 
   return (
-    <CesiumProvider>
-      <CesiumViewer />
-      <InfoCard
-        title="Asteroid Information"
-        description="Details about the selected asteroid"
-        content={<div>Your content here</div>}
-        footer={<button>Action</button>}
-        className="w-full max-w-md"
-      />
-      <NavigationBar/>
-    </CesiumProvider>
+    <BrowserRouter>
+      <CesiumProvider>
+        <CesiumViewer />
+        <NavigationBar />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/simulation" element={<SimulationPage />} />
+          <Route path="/asteroid-select" element={<AsteroidSelectPage />} />
+          <Route path="/about" element={<AboutPage />} />
+        </Routes>
+      </CesiumProvider>
+    </BrowserRouter>
   )
 }
 

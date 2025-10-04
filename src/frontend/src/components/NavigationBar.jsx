@@ -1,7 +1,9 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import logo from '../assets/asteroidsim.svg';
 
 const NavigationBar = () => {
+
   return (
     <nav 
       className="fixed top-0 left-0 right-0 z-50 bg-gray-800/90 backdrop-blur-sm"
@@ -11,35 +13,51 @@ const NavigationBar = () => {
         <div className="flex items-center justify-between">
           {/* Logo Section */}
           <div className="flex items-center space-x-3">
-            <img src={logo} alt="Asteroid Simulator" className="h-8" />
+            <img src={logo} alt="AsteroidSim" className="h-8" />
           </div>
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-6">
-            <a 
-              href="#home" 
-              className="text-gray-300 hover:text-white transition-colors duration-200 font-medium"
+            <NavLink 
+              to="/"
+              className={({ isActive }) => 
+                `transition-colors duration-200 font-medium cursor-pointer ${
+                  isActive ? 'text-white' : 'text-gray-300 hover:text-white'
+                }`
+              }
             >
               Home
-            </a>
-            <a 
-              href="#simulation" 
-              className="text-gray-300 hover:text-white transition-colors duration-200 font-medium"
+            </NavLink>
+            <NavLink 
+              to="/simulation"
+              className={({ isActive }) => 
+                `transition-colors duration-200 font-medium cursor-pointer ${
+                  isActive ? 'text-white' : 'text-gray-300 hover:text-white'
+                }`
+              }
             >
               Simulation
-            </a>
-            <a 
-              href="#asteroid-select" 
-              className="text-gray-300 hover:text-white transition-colors duration-200 font-medium"
+            </NavLink>
+            <NavLink 
+              to="/asteroid-select"
+              className={({ isActive }) => 
+                `transition-colors duration-200 font-medium cursor-pointer ${
+                  isActive ? 'text-white' : 'text-gray-300 hover:text-white'
+                }`
+              }
             >
               Asteroid select
-            </a>
-            <a 
-              href="#about" 
-              className="text-gray-300 hover:text-white transition-colors duration-200 font-medium"
+            </NavLink>
+            <NavLink 
+              to="/about"
+              className={({ isActive }) => 
+                `transition-colors duration-200 font-medium cursor-pointer ${
+                  isActive ? 'text-white' : 'text-gray-300 hover:text-white'
+                }`
+              }
             >
               About
-            </a>
+            </NavLink>
           </div>
         </div>
       </div>
