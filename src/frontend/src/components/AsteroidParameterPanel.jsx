@@ -19,20 +19,44 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 
+const preMadeAsteroids = [
+    { name: 'Apophis', diameter: 370, density: 3000, velocity: 30000 },
+    { name: 'Bennu', diameter: 492, density: 1200, velocity: 28000 },
+    { name: 'Ryugu', diameter: 900, density: 1900, velocity: 25000 },
+    { name: 'Custom' },
+]
+
+const structureOptions = ['Water-based', 'Sedimentary', 'Crystalline']
+
 const AsteroidControlPanel = ({ onLaunch }) => {
-    const [diameter, setDiameter] = useState(100) // meters
-    const [density, setDensity] = useState(3000) // kg/m³ default: rock
-    const [velocity, setVelocity] = useState(20000) // m/s
-    const [entryAngle, setEntryAngle] = useState(45) // degrees
-    const [azimuth, setAzimuth] = useState(0) // degrees
-    const [lat, setLat] = useState(0) // aim point latitude
-    const [lon, setLon] = useState(0) // aim point longitude
+    const [selectedAsteroid, setSelectedAsteroid] = useState('Apophis')
+    const [diameter, setDiameter] = useState(100)
+    const [density, setDensity] = useState(3000)
+    const [velocity, setVelocity] = useState(20000)
+    const [structure, setStructure] = useState('Sedimentary')
+    const [entryAngle, setEntryAngle] = useState(90)
+    const [azimuth, setAzimuth] = useState(0)
+    const [lat, setLat] = useState(0)
+    const [lon, setLon] = useState(0)
+
+    // Update parameters when a pre-made asteroid is selected
+    const handleAsteroidSelect = (name) => {
+        setSelectedAsteroid(name)
+        const asteroid = preMadeAsteroids.find((a) => a.name === name)
+        if (asteroid && asteroid.name !== 'Custom') {
+            setDiameter(asteroid.diameter)
+            setDensity(asteroid.density)
+            setVelocity(asteroid.velocity)
+        }
+    }
+
+    const isCustom = selectedAsteroid === 'Custom'
 
     const handleLaunch = () => {
         onLaunch({
             diameter,
             density,
-            velocityKm: velocity / 1000, // convert to km/s for backend
+            velocityKm: velocity / 1000.0,
             entryAngle,
             azimuth,
             aimPoint: { lat, lon },
@@ -50,6 +74,23 @@ const AsteroidControlPanel = ({ onLaunch }) => {
                 </CardHeader>
 
                 <CardContent className="space-y-6 text-slate-200 overflow-y-auto">
+                    {/* Asteroid Selector */}
+                    <div className="space-y-2">
+                        <Label className="text-slate-300">Select Asteroid</Label>
+                        <Select value={selectedAsteroid} onValueChange={handleAsteroidSelect}>
+                            <SelectTrigger className="w-full bg-slate-900 text-slate-200 border-slate-600">
+                                <SelectValue placeholder="Select an asteroid" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-900 text-slate-200 border-slate-600 z-[100]" sideOffset={5}>
+                                {preMadeAsteroids.map((a) => (
+                                    <SelectItem key={a.name} value={a.name}>
+                                        {a.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                     {/* Diameter */}
                     <div className="space-y-2">
                         <Label className="text-slate-300">Asteroid Diameter (m)</Label>
@@ -61,11 +102,13 @@ const AsteroidControlPanel = ({ onLaunch }) => {
                                 step={10}
                                 onValueChange={(val) => setDiameter(val[0])}
                                 className="flex-1"
+                                disabled={!isCustom}
                             />
                             <Input
                                 type="number"
                                 value={diameter}
                                 onChange={(e) => setDiameter(Number(e.target.value))}
+                                disabled={!isCustom}
                                 className="w-20 bg-slate-900 text-slate-200 border-slate-600 
                            [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
@@ -75,17 +118,25 @@ const AsteroidControlPanel = ({ onLaunch }) => {
                     {/* Density */}
                     <div className="space-y-2">
                         <Label className="text-slate-300">Material Density (kg/m³)</Label>
-                        <Select value={density.toString()} onValueChange={(val) => setDensity(Number(val))}>
-                            <SelectTrigger className="w-full bg-slate-900 text-slate-200 border-slate-600">
-                                <SelectValue placeholder="Select density" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-slate-900 text-slate-200 border-slate-600 z-[100]" sideOffset={5}>
-                                <SelectItem value="3000">Rock (~3000)</SelectItem>
-                                <SelectItem value="2500">Crystal (~2500)</SelectItem>
-                                <SelectItem value="7800">Iron (~7800)</SelectItem>
-                                <SelectItem value="1000">Ice (~1000)</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div className="flex items-center space-x-2">
+                            <Slider
+                                value={[density]}
+                                min={500}
+                                max={8000}
+                                step={100}
+                                onValueChange={(val) => setDensity(val[0])}
+                                className="flex-1"
+                                disabled={!isCustom}
+                            />
+                            <Input
+                                type="number"
+                                value={density}
+                                onChange={(e) => setDensity(Number(e.target.value))}
+                                disabled={!isCustom}
+                                className="w-24 bg-slate-900 text-slate-200 border-slate-600 
+                           [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                        </div>
                     </div>
 
                     {/* Velocity */}
@@ -99,16 +150,37 @@ const AsteroidControlPanel = ({ onLaunch }) => {
                                 step={100}
                                 onValueChange={(val) => setVelocity(val[0])}
                                 className="flex-1"
+                                disabled={!isCustom}
                             />
                             <Input
                                 type="number"
                                 value={velocity}
                                 onChange={(e) => setVelocity(Number(e.target.value))}
+                                disabled={!isCustom}
                                 className="w-24 bg-slate-900 text-slate-200 border-slate-600 
                            [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                         </div>
-                        <p className="text-xs text-slate-400">Will be converted to km/s for backend</p>
+                    </div>
+
+                    {/* Structure Type */}
+                    <div className="space-y-2">
+                        <Label className="text-slate-300">Structure Type</Label>
+                        <Select
+                            value={structure}
+                            onValueChange={setStructure}
+                        >
+                            <SelectTrigger className="w-full bg-slate-900 text-slate-200 border-slate-600">
+                                <SelectValue placeholder="Select structure type" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-900 text-slate-200 border-slate-600 z-[100]" sideOffset={5}>
+                                {structureOptions.map((type) => (
+                                    <SelectItem key={type} value={type}>
+                                        {type}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     {/* Entry Angle */}
@@ -159,7 +231,16 @@ const AsteroidControlPanel = ({ onLaunch }) => {
                             />
                         </div>
                         <p className="text-xs text-slate-400">
-                            Spawn point will be placed 120 km above aim point
+                            Asteroid will enter earths atmosphere at Aim Point.
+                            </p>
+                        <p className="text-xs text-slate-400">
+                            To drop the asteroid at Aim Point:
+                            </p>
+                        <p className="text-xs text-slate-400">
+                            Horizontal = 90°
+                            </p>
+                        <p className="text-xs text-slate-400">
+                            Azimuth = 0°
                         </p>
                     </div>
                 </CardContent>
