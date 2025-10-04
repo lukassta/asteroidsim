@@ -4,6 +4,8 @@ import CesiumViewer from './CesiumViewer.jsx'
 import { CesiumProvider } from './context/CesiumContext'
 import ControlPanel from './components/ControlPanel.jsx'
 import InfoCard from './components/InfoCard.jsx'
+import { Navigation } from 'lucide-react'
+import NavigationBar from './components/NavigationBar.jsx'
 
 function App() {
 
@@ -17,6 +19,7 @@ function App() {
         footer={<button>Action</button>}
         className="w-full max-w-md"
       />
+      <NavigationBar/>
     </CesiumProvider>
   )
 }
