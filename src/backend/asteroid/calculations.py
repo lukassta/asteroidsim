@@ -7,7 +7,8 @@ from pyproj import Transformer
 from shapely.geometry import Point
 import math
 import numbers
-from .constants import ENERGY_JOULES_PER_MEGATON_TNT
+from .constants import *
+from .utils import as_finite_positive_float
 
 def get_population_in_area(latitude, longtitude, radius):
     """
@@ -90,17 +91,14 @@ def calculate_volume(diameter_m: float) -> float:
     return volume
 
 def calculate_mass(volume_m3: float, density_kg_m3: float) -> float:
-    """Calculate mass given volume and density.
+    """Calculate mass from volume and density.
 
     Parameters:
-        volume_m3 (float): Volume in cubic meters (m³).
-        density_kg_m3 (float): Density in kilograms per cubic meter (kg/m³).
+        volume_m3 (float): volume in cubic meters (m^3).
+        density_kg_m3 (float): density in kilograms per cubic meter (kg/m^3).
 
     Returns:
-        float: Mass in kilograms (kg).
-
-    Raises:
-        ValueError: If volume or density are not positive.
+        float: mass in kilograms (kg).
     """
     if volume_m3 <= 0 or density_kg_m3 <= 0:
         raise ValueError("Volume and density must be positive numbers.")
@@ -112,41 +110,52 @@ def calculate_impact_energy(mass_kg: float, velocity_m_s: float) -> float:
     """Calculate kinetic energy released by an impactor in megatons of TNT.
 
     Parameters:
-        mass_kg (float): Mass of the impactor in kilograms (kg).
-        velocity_m_s (float): Velocity of the impactor in meters per second (m/s).
+        mass_kg (float): mass of the impactor in kilograms (kg).
+        velocity_m_s (float): velocity of the impactor in meters per second (m/s).
 
     Returns:
-        float: Energy released in megatons of TNT (Mt).
-
-    Raises:
-        ValueError: If mass or velocity are not positive.
+        float: energy released in megatons of TNT (Mt).
     """
-    if mass_kg <= 0 or velocity_m_s <= 0:
-        raise ValueError("Mass and velocity must be positive numbers.")
+    mass_kg_validated = as_finite_positive_float("mass_kg", mass_kg)
+    velocity_m_s_validated = as_finite_positive_float("velocity_m_s", velocity_m_s)
 
-    joules = 0.5 * mass_kg * velocity_m_s**2
-    megatons_tnt = joules / ENERGY_JOULES_PER_MEGATON_TNT
-    return megatons_tnt
+    E_joules = 0.5 * mass_kg_validated * (velocity_m_s_validated ** 2)
+    E_mt = E_joules / J_PER_MT
+    return E_mt
 
-def calculate_transient_crater_diameter(diameter_m: float, energy_tnt: float, material_type: str) -> float:
-    material_sf = {
-        "water": 0.05,
-        "sedimentary": 0.30,
-        "crystalline": 0.50
-    }
-
-    # A and B constants are backed in the scientific justification file for this project
-    scaling_factor = material_sf[material_type]
-    A = 0.0162
-    B = 0.29
-
-    crater_diameter_m = A * (energy_tnt * scaling_factor * ENERGY_JOULES_PER_MEGATON_TNT) ** B
-    return crater_diameter_m
-
-def calculate_final_crater_diameter(D_tc_m: float) -> float:
-    """Return final rim-to-rim diameter from transient diameter (meters).
-    Uses D_fr = 1.25 * D_tc for simple craters. For complex, raise for now.
+def calculate_crater_diameter_transient(E_mt: float, material_type: str) -> float:
     """
-    if D_tc_m <= 0:
-        raise ValueError("D_tc_m must be positive")
-    return D_tc_m * 1.25
+    Calculate transient crater diameter from impact energy and material type.
+
+    Params:
+        E_mt (float): energy in megatons of TNT
+        material_type (str): One of "sedimentary" | "crystalline" | "water"
+
+    Returns:
+        float: transient crater diameter (m)
+    """
+    E_mt_validated = as_finite_positive_float("E_mt", E_mt)
+    try:
+        scaling_factor = CRATER_MATERIAL_SF[material_type]
+    except KeyError:
+        allowed = ", ".join(sorted(CRATER_MATERIAL_SF.keys()))
+        raise ValueError(f"material_type must be one of: {allowed}.")
+
+    crater_diameter_transient_m = CRATER_A * (E_mt_validated * scaling_factor * J_PER_MT) ** CRATER_B
+    return crater_diameter_transient_m
+
+
+def calculate_crater_diameter_final(D_tc_m: float) -> float:
+    """
+    Calculate final rim-to-rim crater diameter from transient diameter.
+    
+    Params:
+        D_tc_m (float): transient crater diameter in meters (m)
+
+    Returns:
+        float: final rim-to-rim crater diameter in meters (m)
+    """
+    D_tc_m_validated = as_finite_positive_float("D_tc_m", D_tc_m)
+
+    crater_diameter_final_m = D_tc_m_validated * SIMPLE_TRANSIENT_TO_FINAL_FACTOR
+    return crater_diameter_final_m

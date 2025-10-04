@@ -2,10 +2,10 @@ from asteroid.models import Asteroid
 from asteroid.serializers import BriefAsteroidSerializer
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework import status
-from .calculations import normalize_params
+from rest_framework.views import APIView
+from .utils import normalize_params, compute_simulation_id
 
-
+# are we still doing the character thing to need this? @lukas
 class AsteroidListView(APIView):
     queryset = Asteroid.objects.all()
     serializers = BriefAsteroidSerializer

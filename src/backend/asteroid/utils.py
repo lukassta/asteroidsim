@@ -1,4 +1,5 @@
 from typing import Any, Dict
+import math
 
 def normalize_params(params: Dict[str, Any]) -> Dict[str, Any]:
     """Return a new dict with defaults applied and fields rounded.
@@ -58,3 +59,15 @@ def normalize_params(params: Dict[str, Any]) -> Dict[str, Any]:
 
 def compute_simulation_id(normalized_params: Dict[str, Any]) -> str:
     pass
+
+def as_finite_positive_float(name: str, value: Any) -> float:
+    """Coerce to float, ensure finite and > 0."""
+    try:
+        x = float(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"{name} must be a number.")
+    if not math.isfinite(x):
+        raise ValueError(f"{name} must be finite (no NaN/inf).")
+    if x <= 0:
+        raise ValueError(f"{name} must be positive.")
+    return x
