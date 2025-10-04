@@ -20,10 +20,12 @@ import {
 } from '@/components/ui/select'
 
 const preMadeAsteroids = [
-    { name: 'Apophis', diameter: 370, density: 3000, velocity: 30000 },
+    { name: 'Gaspra', diameter: 370, density: 3000, velocity: 30000 },
     { name: 'Bennu', diameter: 492, density: 1200, velocity: 28000 },
     { name: 'Ryugu', diameter: 900, density: 1900, velocity: 25000 },
     { name: 'Custom' },
+
+    //CHANGE DATA
 ]
 
 const structureOptions = [
@@ -32,7 +34,7 @@ const structureOptions = [
     { label: 'Crystalline rock', value: 'crystalline' }
 ]
 
-const AsteroidControlPanel = ({ onLaunch, impactLocation }) => {
+const AsteroidControlPanel = ({ onLaunch, impactLocation, onAsteroidTypeChange }) => {
     const [selectedAsteroid, setSelectedAsteroid] = useState('Apophis')
     const [diameter, setDiameter] = useState(100)
     const [density, setDensity] = useState(3000)
@@ -51,6 +53,10 @@ const AsteroidControlPanel = ({ onLaunch, impactLocation }) => {
             setDiameter(asteroid.diameter)
             setDensity(asteroid.density)
             setVelocity(asteroid.velocity)
+        }
+        // Notify parent component about asteroid type change
+        if (onAsteroidTypeChange) {
+            onAsteroidTypeChange(name)
         }
     }
 
