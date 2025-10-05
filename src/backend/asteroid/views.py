@@ -10,7 +10,8 @@ from .calculations import (calculate_crater_depth_final,
                            calculate_crater_diameter_final,
                            calculate_crater_diameter_transient,
                            calculate_impact_energy, calculate_rings,
-                           get_population_in_area)
+                           get_population_in_area,
+                           caclulate_asteroid_impact_mass)
 from .constants import KPA_FATALITY_RATE
 from .physics_helpers import calculate_mass, calculate_volume
 from .utils import compute_simulation_id, normalize_params
@@ -50,8 +51,9 @@ class SimulationsComputeView(APIView):
 
         asteroid_volume = calculate_volume(asteroid_diameter)
         asteroid_mass = calculate_mass(asteroid_volume, asteroid_density)
+        asteroid_mass_on_impact = caclulate_asteroid_impact_mass(asteroid_mass, velocity, 156.41, asteroid_density)
 
-        impact_energy = calculate_impact_energy(asteroid_mass, velocity)
+        impact_energy = calculate_impact_energy(asteroid_mass_on_impact, velocity)
         crater_diameter_trans = calculate_crater_diameter_transient(
             impact_energy, asteroid_composition
         )
