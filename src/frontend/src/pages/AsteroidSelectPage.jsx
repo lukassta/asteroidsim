@@ -77,6 +77,12 @@ const AsteroidSelectPage = () => {
 
       const data = await response.json();
       console.log('API response:', data);
+      console.log('API response structure:', {
+        hasMap: !!data.map,
+        hasPanel: !!data.panel,
+        hasMeta: !!data.meta,
+        keys: Object.keys(data)
+      });
 
       // Redirect to ImpactEffectPage with the response data
       navigate('/impact-effects', {

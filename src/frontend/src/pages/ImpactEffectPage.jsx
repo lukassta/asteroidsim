@@ -11,12 +11,18 @@ export default function ImpactEffectPage() {
     const location = useLocation();
     const simulationData = location.state?.simulationData;
     
+    console.log("ImpactEffectPage mounted - location.state:", location.state);
+    console.log("simulationData:", simulationData);
+    console.log("simulationData keys:", simulationData ? Object.keys(simulationData) : "none");
+    
     // Initialize state with simulationData if available
     const [id, setId] = useState(simulationData?.id || "");
     const [map, setMap] = useState(simulationData?.map || null);
     const [panel, setPanel] = useState(simulationData?.panel || null);
     const [meta, setMeta] = useState(simulationData?.meta || null);
     const { viewer, entitiesRef } = useCesium();
+    
+    console.log("Initial state - map:", !!map, "panel:", !!panel, "meta:", !!meta);
 
     // Reset Cesium viewer to globe view when component mounts
     useEffect(() => {
@@ -70,10 +76,34 @@ export default function ImpactEffectPage() {
             if (simulationData) {
                 // Use data from navigation state
                 console.log("Using simulation data from navigation:", simulationData);
-                setId(simulationData.id);
-                setMap(simulationData.map);
-                setPanel(simulationData.panel);
-                setMeta(simulationData.meta);
+                console.log("simulationData.map exists?", !!simulationData.map);
+                console.log("simulationData.panel exists?", !!simulationData.panel);
+                console.log("simulationData.meta exists?", !!simulationData.meta);
+                
+                // Check if data is nested in a 'result' or 'data' property
+                const dataSource = simulationData.result || simulationData.data || simulationData;
+                console.log("Using dataSource:", dataSource);
+                console.log("dataSource.map:", dataSource.map);
+                
+                if (!dataSource.map || !dataSource.panel || !dataSource.meta) {
+                    console.error("Invalid simulation data structure! Missing required fields.");
+                    console.log("Falling back to fetch default simulation...");
+                    // Fallback to fetching example data
+                    fetchSimulation().then((data) => {
+                        console.log("Fetched fallback simulation data:", data);
+                        setId(data.id);
+                        setMap(data.map);
+                        setPanel(data.panel);
+                        setMeta(data.meta);
+                    }).catch((error) => {
+                        console.error("Error fetching fallback simulation data:", error);
+                    });
+                } else {
+                    setId(dataSource.id || simulationData.id || "");
+                    setMap(dataSource.map);
+                    setPanel(dataSource.panel);
+                    setMeta(dataSource.meta);
+                }
             } else {
                 // Otherwise, fetch from the GET endpoint (fallback for direct navigation)
                 console.log("No simulation data in navigation state, fetching from API...");
