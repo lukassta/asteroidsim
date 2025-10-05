@@ -76,6 +76,15 @@ const NavigationBar = () => {
                             Asteroid select
                         </NavLink>
                         <NavLink
+                            to="/impact-effects"
+                            className={({ isActive }) =>
+                                `transition-colors duration-200 font-medium cursor-pointer ${isActive ? 'text-white' : 'text-gray-300 hover:text-white'
+                                }`
+                            }
+                        >
+                            Impact effects
+                        </NavLink>
+                        <NavLink
                             to="/asteroid-simulation"
                             className={({ isActive }) =>
                                 `transition-colors duration-200 font-medium cursor-pointer ${isActive ? 'text-white' : 'text-gray-300 hover:text-white'
@@ -84,6 +93,7 @@ const NavigationBar = () => {
                         >
                             Simulation
                         </NavLink>
+
 
                         {/*<NavLink 
               to="/about"
