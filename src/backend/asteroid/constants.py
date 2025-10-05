@@ -37,3 +37,5 @@ BLAST_RADIUS_SF: Dict[str, float] = {
     "crystalline": 3,
     "water": 2
 }
+
+WGS84 = Geod(ellps="WGS84")
