@@ -2,4 +2,3 @@
 *sqlite*
 .venv
 **/__pycache__
-src/frontend/node_modules
