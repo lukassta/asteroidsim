@@ -75,6 +75,15 @@ const NavigationBar = () => {
                         >
                             Asteroid select
                         </NavLink>
+                        <NavLink
+                            to="/asteroid-simulation"
+                            className={({ isActive }) =>
+                                `transition-colors duration-200 font-medium cursor-pointer ${isActive ? 'text-white' : 'text-gray-300 hover:text-white'
+                                }`
+                            }
+                        >
+                            Trajectory Simulator
+                        </NavLink>
                         {/*<NavLink 
               to="/about"
               className={({ isActive }) => 

@@ -1,0 +1,71 @@
+[
+  {
+    "id": "document",
+    "name": "Sample Asteroid Near-Earth Trajectory",
+    "version": "1.0",
+    "clock": {
+      "interval": "2024-10-05T00:00:00Z/2024-10-05T06:00:00Z",
+      "currentTime": "2024-10-05T00:00:00Z",
+      "multiplier": 60,
+      "range": "LOOP_STOP",
+      "step": "SYSTEM_CLOCK_MULTIPLIER"
+    }
+  },
+  {
+    "id": "asteroid_apophis",
+    "name": "Sample Near-Earth Asteroid",
+    "description": "A sample asteroid trajectory demonstrating a close Earth approach",
+    "availability": "2024-10-05T00:00:00Z/2024-10-05T06:00:00Z",
+    "position": {
+      "epoch": "2024-10-05T00:00:00Z",
+      "interpolationAlgorithm": "LAGRANGE",
+      "interpolationDegree": 5,
+      "referenceFrame": "INERTIAL",
+      "cartesian": [
+        0, 20000000, 10000000, 5000000,
+        3600, 18000000, 12000000, 4000000,
+        7200, 15000000, 14000000, 3000000,
+        10800, 11000000, 15000000, 2500000,
+        14400, 6000000, 14000000, 2000000,
+        18000, 0, 11000000, 1800000,
+        21600, -6000000, 6000000, 2000000
+      ]
+    },
+    "billboard": {
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAACXBIWXMAAAsTAAALEwEAmpwYAAABWWlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNS40LjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyI+CiAgICAgICAgIDx0aWZmOk9yaWVudGF0aW9uPjE8L3RpZmY6T3JpZW50YXRpb24+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgpMwidZAAABHklEQVQoFY2SvUoDQRSFv9ndJBs1YqEQbPQJ7HwCEXwDH8FKsLCxsrGwEASfQOwtfAIbGy0sRIuASiKJv5vZzJ3xzro",
+      "scale": 1.5,
+      "show": true
+    },
+    "label": {
+      "text": "Near-Earth Asteroid",
+      "font": "14pt monospace",
+      "style": "FILL_AND_OUTLINE",
+      "fillColor": {
+        "rgba": [255, 255, 255, 255]
+      },
+      "outlineColor": {
+        "rgba": [0, 0, 0, 255]
+      },
+      "outlineWidth": 2,
+      "horizontalOrigin": "LEFT",
+      "pixelOffset": {
+        "cartesian2": [12, 0]
+      },
+      "show": true
+    },
+    "path": {
+      "show": true,
+      "leadTime": 0,
+      "trailTime": 21600,
+      "width": 3,
+      "resolution": 120,
+      "material": {
+        "solidColor": {
+          "color": {
+            "rgba": [255, 165, 0, 255]
+          }
+        }
+      }
+    }
+  }
+]
