@@ -58,4 +58,14 @@ def extract_spkid(data) -> str:
     if isinstance(data, list):
         data = data[0]
 
-    return int(data.get("object", None).get("spkid", None))
+    object = data.get("object", None)
+
+    if object is None:
+        return None
+
+    neo_id = object.get("spkid", None)
+
+    if neo_id is None:
+        return None
+
+    return int(neo_id)
