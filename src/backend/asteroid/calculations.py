@@ -186,10 +186,10 @@ def calculate_asteroid_fall_trajecotry_coordinates(
         )
 
         x_m = (
-            h * math.cos(azimuth_angle_deg) / math.tan(entry_angle_deg) + EARTH_RADIUS_M
+            h * math.sin(azimuth_angle_deg) / math.tan(entry_angle_deg) + EARTH_RADIUS_M
         )
         y_m = (
-            h * math.sin(azimuth_angle_deg) / math.tan(entry_angle_deg) + EARTH_RADIUS_M
+            h * math.cos(azimuth_angle_deg) / math.tan(entry_angle_deg) + EARTH_RADIUS_M
         )
         z_m = h + EARTH_RADIUS_M
 
