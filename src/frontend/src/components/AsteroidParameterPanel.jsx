@@ -63,7 +63,7 @@ const AsteroidControlPanel = ({ onLaunch, impactLocation, onAsteroidTypeChange, 
     const isCustom = selectedAsteroid === 'Custom'
 
     const handleLaunch = () => {
-        onLaunch({
+        const res = onLaunch({
             diameter,
             density,
             velocityKm: velocity / 1000.0,
@@ -72,6 +72,8 @@ const AsteroidControlPanel = ({ onLaunch, impactLocation, onAsteroidTypeChange, 
             aimPoint: { lat, lon },
             materialType: structure,
         })
+
+        console.log(res)
     }
 
     return (

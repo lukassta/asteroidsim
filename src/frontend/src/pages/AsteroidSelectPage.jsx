@@ -43,7 +43,7 @@ const AsteroidSelectPage = () => {
   const handleAsteroidLaunch = async (params) => {
     console.log('Launching asteroid with parameters:', params);
     console.log('Impact location:', impactLocation);
-    
+
     if (!viewer) {
       console.error('Cesium viewer not initialized');
       return;
@@ -51,7 +51,7 @@ const AsteroidSelectPage = () => {
 
     // Extract parameters
     const { diameter, density, velocityKm, entryAngle, azimuth, aimPoint, materialType } = params;
-    
+
     // Format data according to API specification
     const requestData = {
       inputs: {
@@ -71,7 +71,7 @@ const AsteroidSelectPage = () => {
     console.log('Sending data to API:', requestData);
 
     try {
-      const response = await fetch('/api/simulations', {
+      const response = await fetch('https://asteroidsim.com/api/simulations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData)
@@ -95,10 +95,10 @@ const AsteroidSelectPage = () => {
 
     // Hide the globe
     viewer.scene.globe.show = false;
-    
+
     // Hide the atmosphere (removes the blue sky)
     viewer.scene.skyAtmosphere.show = false;
-    
+
     // Enable the skybox with stars
     viewer.scene.skyBox.show = true;
 
@@ -110,7 +110,7 @@ const AsteroidSelectPage = () => {
 
     // Load the asteroid model
     const position = Cesium.Cartesian3.fromDegrees(0, 0, 0);
-    
+
     const heading = Cesium.Math.toRadians(0);
     const pitch = 0;
     const roll = 0;
@@ -136,14 +136,14 @@ const AsteroidSelectPage = () => {
       viewer.scene.screenSpaceCameraController.enableZoom = true;
       viewer.scene.screenSpaceCameraController.enableTilt = true;
       viewer.scene.screenSpaceCameraController.enableLook = false;
-      
+
       // Set the camera to look at the model's position
       const modelPosition = entity.position.getValue(Cesium.JulianDate.now());
       viewer.camera.lookAt(
         modelPosition,
         new Cesium.HeadingPitchRange(0, -Cesium.Math.PI_OVER_FOUR, modelConfig.cameraDistance)
       );
-      
+
       // Set the rotation center to the model's position
       viewer.scene.screenSpaceCameraController.lookEventTypes = [
         Cesium.CameraEventType.LEFT_DRAG
@@ -177,8 +177,8 @@ const AsteroidSelectPage = () => {
   );*/
 
   return (
-    <AsteroidParameterPanel 
-      onLaunch={handleAsteroidLaunch} 
+    <AsteroidParameterPanel
+      onLaunch={handleAsteroidLaunch}
       impactLocation={impactLocation}
       onAsteroidTypeChange={setCurrentAsteroidType}
       currentAsteroidType={currentAsteroidType}
