@@ -33,13 +33,15 @@ class SimulationsComputeView(APIView):
                 detail="Request body must include an 'inputs' object, "
                 "e.g. {'inputs': {...simulation parameters...}}"
             )
-        normalized_params = normalize_params(raw_params)  # TODO
 
-        lat = 0  # TODO
-        lon = 0  # TODO
-        velocity = 0  # TODO
+        normalized_params = normalize_params(raw_params)
+
+        lat = normalized_params.get("lat", 0)
+        lon = normalized_params.get("lon", 0)
+        velocity = normalized_params.get("entry_velocity_m_s", 0)
 
         asteroid_mass = calculate_mass(asteroid_volume, asteroid_density)
+
         impact_energy = calculate_impact_energy(asteroid_mass, velocity)
         crater_diameter_trans = calculate_crater_diameter_transient(impact_energy)
         crater_diameter = diamcalculate_crater_diameter_final(crater_diameter_trans)
@@ -213,9 +215,6 @@ class SimulationsComputeView(APIView):
         # 2. compute rings based on the 5 tresholds
         # 3. compute rings delta_to_next_s and arrival_time
         # 4. compute h1 h2 h3
-
-        # TODO
-        # RETURN
 
         return Response({"data": return_data}, status=status.HTTP_200_OK)
 
