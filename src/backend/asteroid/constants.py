@@ -31,6 +31,10 @@ KPA_FATALITY_RATE: Dict[str, float] = {
 
 CRATER_A: float = 0.0162  # <-- document source
 CRATER_B: float = 0.29  # <-- document source
+
+SEMI_MAJOR_AXIS_ECCENTRY_RATIO = 1.4956 * 10**11  # Earth
+
+EARTH_GRAVITATIONAL_CONSTANT = 9.81  # m/s^2
 # ---------------- ASK PHYSICIST FOR SOURCES SO I CAN CITE HERE IN COMMENTS ----------------
 
 BLAST_RADIUS_SF: Dict[str, float] = {"sedimentary": 2.5, "crystalline": 3, "water": 2}

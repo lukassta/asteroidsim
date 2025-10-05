@@ -6,12 +6,13 @@ from rest_framework.views import APIView
 from asteroid.models import Asteroid
 from asteroid.serializers import BriefAsteroidSerializer
 
-from .calculations import (calculate_crater_depth_final,
+from .calculations import (caclulate_asteroid_impact_mass,
+                           calculate_crater_depth_final,
                            calculate_crater_diameter_final,
                            calculate_crater_diameter_transient,
                            calculate_impact_energy, calculate_rings,
-                           get_population_in_area,
-                           caclulate_asteroid_impact_mass)
+                           calculate_landing_time,
+                           get_population_in_radius)
 from .constants import KPA_FATALITY_RATE
 from .physics_helpers import calculate_mass, calculate_volume
 from .utils import compute_simulation_id, normalize_params
@@ -40,59 +41,72 @@ class SimulationsComputeView(APIView):
                 "e.g. {'inputs': {...simulation parameters...}}"
             )
 
+        landing_height_m = 120 * 1000  # 12km
+
         normalized_params = normalize_params(raw_params)
 
         asteroid_composition = normalized_params.get("material_type", 0)
-        asteroid_density = normalized_params.get("density_kg_m3", 0)
-        asteroid_diameter = normalized_params.get("diameter_m", 0)
+        asteroid_density_kg_m3 = normalized_params.get("density_kg_m3", 0)
+        asteroid_diameter_m = normalized_params.get("diameter_m", 0)
         lat = normalized_params.get("lat", 0)
         lon = normalized_params.get("lon", 0)
-        velocity = normalized_params.get("entry_velocity_m_s", 0)
+        entry_velocity_m_s = normalized_params.get("entry_velocity_m_s", 0)
 
-        asteroid_volume = calculate_volume(asteroid_diameter)
-        asteroid_mass = calculate_mass(asteroid_volume, asteroid_density)
-        asteroid_mass_on_impact = caclulate_asteroid_impact_mass(asteroid_mass, velocity, 156.41, asteroid_density)
+        landing_time_s = calculate_landing_time(landing_height_m, entry_velocity_m_s)
 
-        impact_energy = calculate_impact_energy(asteroid_mass_on_impact, velocity)
-        crater_diameter_trans = calculate_crater_diameter_transient(
-            impact_energy, asteroid_composition
+        asteroid_volume_m3 = calculate_volume(asteroid_diameter_m)
+
+        asteroid_mass_kg = calculate_mass(asteroid_volume_m3, asteroid_density_kg_m3)
+
+        asteroid_mass_on_impact_kg = caclulate_asteroid_impact_mass(
+            asteroid_mass_kg, entry_velocity_m_s, landing_time_s, asteroid_density_kg_m3
         )
-        crater_diameter = calculate_crater_diameter_final(crater_diameter_trans)
-        crater_depth = calculate_crater_depth_final(crater_diameter)
 
-        rings = calculate_rings(impact_energy, asteroid_diameter, asteroid_composition)
+        impact_energy_Mt_tnt = calculate_impact_energy(
+            asteroid_mass_on_impact_kg, entry_velocity_m_s
+        )
 
-        kpa_70_radius = rings.get("kpa_70", 0)
-        kpa_50_radius = rings.get("kpa_50", 0)
-        kpa_35_radius = rings.get("kpa_35", 0)
-        kpa_20_radius = rings.get("kpa_20", 0)
-        kpa_10_radius = rings.get("kpa_10", 0)
-        kpa_3_radius = rings.get("kpa_3", 0)
+        crater_diameter_trans_m = calculate_crater_diameter_transient(
+            impact_energy_Mt_tnt, asteroid_composition
+        )
+        crater_diameter_m = calculate_crater_diameter_final(crater_diameter_trans_m)
+        crater_depth_m = calculate_crater_depth_final(crater_diameter_m)
 
-        crater_population = get_population_in_area(lat, lon, crater_diameter / 2)
+        rings = calculate_rings(
+            impact_energy_Mt_tnt, asteroid_diameter_m, asteroid_composition
+        )
+
+        kpa_70_radius_m = rings.get("kpa_70", 0)
+        kpa_50_radius_m = rings.get("kpa_50", 0)
+        kpa_35_radius_m = rings.get("kpa_35", 0)
+        kpa_20_radius_m = rings.get("kpa_20", 0)
+        kpa_10_radius_m = rings.get("kpa_10", 0)
+        kpa_3_radius_m = rings.get("kpa_3", 0)
+
+        crater_population = get_population_in_radius(lat, lon, crater_diameter_m / 2)
         kpa_70_population = (
-            get_population_in_area(lat, lon, kpa_70_radius) - crater_population
+            get_population_in_radius(lat, lon, kpa_70_radius_m) - crater_population
         )
         kpa_50_population = (
-            get_population_in_area(lat, lon, kpa_50_radius)
+            get_population_in_radius(lat, lon, kpa_50_radius_m)
             - crater_population
             - kpa_70_population
         )
         kpa_35_population = (
-            get_population_in_area(lat, lon, kpa_35_radius)
+            get_population_in_radius(lat, lon, kpa_35_radius_m)
             - crater_population
             - kpa_70_population
             - kpa_50_population
         )
         kpa_20_population = (
-            get_population_in_area(lat, lon, kpa_20_radius)
+            get_population_in_radius(lat, lon, kpa_20_radius_m)
             - crater_population
             - kpa_70_population
             - kpa_50_population
             - kpa_35_population
         )
         kpa_10_population = (
-            get_population_in_area(lat, lon, kpa_10_radius)
+            get_population_in_radius(lat, lon, kpa_10_radius_m)
             - crater_population
             - kpa_70_population
             - kpa_50_population
@@ -100,7 +114,7 @@ class SimulationsComputeView(APIView):
             - kpa_20_population
         )
         kpa_3_population = (
-            get_population_in_area(lat, lon, kpa_3_radius)
+            get_population_in_radius(lat, lon, kpa_3_radius_m)
             - crater_population
             - kpa_70_population
             - kpa_50_population
@@ -117,7 +131,6 @@ class SimulationsComputeView(APIView):
         kpa_10_casulties = kpa_10_population * KPA_FATALITY_RATE.get("kpa_10", 0)
         kpa_3_casulties = kpa_3_population * KPA_FATALITY_RATE.get("kpa_3", 0)
 
-        print(kpa_70_population,  kpa_70_casulties)
         total_casulties = (
             crater_casulties
             + kpa_70_casulties
@@ -132,28 +145,28 @@ class SimulationsComputeView(APIView):
             "id": "id",
             "map": {
                 "center": {"lat": lat, "lon": lon},
-                "crater_transient_diameter_m": crater_diameter_trans,
-                "crater_final_diameter_m": crater_diameter,
+                "crater_transient_diameter_m": crater_diameter_trans_m,
+                "crater_final_diameter_m": crater_diameter_m,
                 "rings": [
-                    {"threshold_kpa": 70, "radius_m": kpa_70_radius},
-                    {"threshold_kpa": 50, "radius_m": kpa_50_radius},
-                    {"threshold_kpa": 35, "radius_m": kpa_35_radius},
-                    {"threshold_kpa": 20, "radius_m": kpa_20_radius},
-                    {"threshold_kpa": 10, "radius_m": kpa_10_radius},
-                    {"threshold_kpa": 3, "radius_m": kpa_3_radius},
+                    {"threshold_kpa": 70, "radius_m": kpa_70_radius_m},
+                    {"threshold_kpa": 50, "radius_m": kpa_50_radius_m},
+                    {"threshold_kpa": 35, "radius_m": kpa_35_radius_m},
+                    {"threshold_kpa": 20, "radius_m": kpa_20_radius_m},
+                    {"threshold_kpa": 10, "radius_m": kpa_10_radius_m},
+                    {"threshold_kpa": 3, "radius_m": kpa_3_radius_m},
                 ],
             },
             "panel": {
-                "energy_released_megatons": 120.0,
+                "energy_released_megatons": impact_energy_Mt_tnt,
                 "crater_final": {
                     "formed": True,
-                    "diameter_m": crater_diameter,
-                    "depth_m": crater_depth,
+                    "diameter_m": crater_diameter_m,
+                    "depth_m": crater_depth_m,
                 },
                 "rings": [
                     {
                         "threshold_kpa": 70,
-                        "radius_m": kpa_70_radius,
+                        "radius_m": kpa_70_radius_m,
                         "arrival_time_s": 5.9,
                         "delta_to_next_s": 2.4,
                         "population": kpa_70_population,
@@ -162,7 +175,7 @@ class SimulationsComputeView(APIView):
                     },
                     {
                         "threshold_kpa": 50,
-                        "radius_m": kpa_50_radius,
+                        "radius_m": kpa_50_radius_m,
                         "arrival_time_s": 8.3,
                         "delta_to_next_s": 2.7,
                         "population": kpa_50_population,
@@ -171,7 +184,7 @@ class SimulationsComputeView(APIView):
                     },
                     {
                         "threshold_kpa": 35,
-                        "radius_m": kpa_35_radius,
+                        "radius_m": kpa_35_radius_m,
                         "arrival_time_s": 11.0,
                         "delta_to_next_s": 6.0,
                         "population": kpa_35_population,
@@ -180,7 +193,7 @@ class SimulationsComputeView(APIView):
                     },
                     {
                         "threshold_kpa": 20,
-                        "radius_m": kpa_20_radius,
+                        "radius_m": kpa_20_radius_m,
                         "arrival_time_s": 17.0,
                         "delta_to_next_s": 9.0,
                         "population": kpa_20_population,
@@ -189,7 +202,7 @@ class SimulationsComputeView(APIView):
                     },
                     {
                         "threshold_kpa": 10,
-                        "radius_m": kpa_10_radius,
+                        "radius_m": kpa_10_radius_m,
                         "arrival_time_s": 26.0,
                         "delta_to_next_s": 28.0,
                         "population": kpa_10_population,
@@ -198,7 +211,7 @@ class SimulationsComputeView(APIView):
                     },
                     {
                         "threshold_kpa": 3,
-                        "radius_m": kpa_3_radius,
+                        "radius_m": kpa_3_radius_m,
                         "arrival_time_s": 54.0,
                         "delta_to_next_s": None,
                         "population": kpa_3_population,
