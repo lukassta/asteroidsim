@@ -16,12 +16,8 @@ export default function ImpactEffectPage() {
     const location = useLocation();
     const simulationData = location.state?.simulationData;
 
-    // Initialize viewer settings when component mounts
+    // Reset Cesium viewer to globe view when component mounts
     useEffect(() => {
-        if (!viewer) return;
-
-        console.log("Initializing Cesium viewer for Impact Effect Page");
-
         // Show the globe
         viewer.scene.globe.show = true;
 
@@ -31,8 +27,17 @@ export default function ImpactEffectPage() {
         // Show the skybox
         viewer.scene.skyBox.show = true;
 
+        // Remove any asteroid entities
+        viewer.entities.removeAll();
+
         // Release the camera from lookAt mode
         viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+
+        // Reset camera to default globe view
+        viewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(0, 20, 20000000),
+            duration: 0.0
+        });
 
         // Reset camera controls to default for Earth rotation
         viewer.scene.screenSpaceCameraController.enableRotate = true;
@@ -48,36 +53,27 @@ export default function ImpactEffectPage() {
 
         // Clear translate event types to prevent panning
         viewer.scene.screenSpaceCameraController.translateEventTypes = [];
+    }, [viewer]);
 
-        // Cleanup function - clear entities when unmounting
-        return () => {
-            console.log("Cleaning up Impact Effect Page");
-            entitiesRef.current.forEach(entity => {
-                viewer.entities.remove(entity);
-            });
-            entitiesRef.current = [];
-        };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Run only once on mount
-
-    // Load simulation data
     useEffect(() => {
-        // If we have data from navigation state (POST request), use it
+        // If we have data from navigation state (POST request), use it immediately
         if (simulationData) {
-            console.log("Loading simulation data from navigation state:", simulationData);
+            console.log("Using simulation data from navigation:", simulationData);
             setId(simulationData.id);
             setMap(simulationData.map);
             setPanel(simulationData.panel);
             setMeta(simulationData.meta);
         } else {
             // Otherwise, fetch from the GET endpoint (fallback for direct navigation)
-            console.log("Fetching simulation data from API");
+            console.log("No simulation data in navigation state, fetching from API...");
             fetchSimulation().then((data) => {
                 console.log("Fetched simulation data:", data);
                 setId(data.id);
                 setMap(data.map);
                 setPanel(data.panel);
                 setMeta(data.meta);
+            }).catch((error) => {
+                console.error("Error fetching simulation data:", error);
             });
         }
     }, [simulationData]);
@@ -85,22 +81,19 @@ export default function ImpactEffectPage() {
     // Render crater rings on the map
     useEffect(() => {
         if (!viewer || !map) {
-            console.log("Crater rings not rendered - viewer:", !!viewer, "map:", !!map);
+            console.log("Crater rendering skipped - viewer or map not ready:", { viewer: !!viewer, map: !!map });
             return;
         }
 
         console.log("Rendering crater rings with map data:", map);
 
-        // Clear existing crater ring entities
+        // Clear existing entities
         entitiesRef.current.forEach(entity => {
             viewer.entities.remove(entity);
         });
         entitiesRef.current = [];
 
         const { center, crater_transient_diameter_m, crater_final_diameter_m, rings } = map;
-
-        console.log(`Adding crater rings at lat: ${center.lat}, lon: ${center.lon}`);
-        console.log(`Number of pressure rings: ${rings.length}`);
 
         // Add the crater center marker
         const centerEntity = viewer.entities.add({
@@ -251,21 +244,17 @@ export default function ImpactEffectPage() {
             entitiesRef.current.push(labelEntity);
         });
 
-        console.log(`Total entities added: ${entitiesRef.current.length}`);
-        console.log(`Viewer total entities: ${viewer.entities.values.length}`);
-
         // Fly camera to the impact site
-        const targetAltitude = rings[rings.length - 1].radius_m * 3;
-        console.log(`Flying camera to lat: ${center.lat}, lon: ${center.lon}, altitude: ${targetAltitude}m`);
-        
         viewer.camera.flyTo({
             destination: Cesium.Cartesian3.fromDegrees(
                 center.lon,
                 center.lat,
-                targetAltitude
+                rings[rings.length - 1].radius_m * 3 // Zoom out to see all rings
             ),
             duration: 2,
         });
+
+        console.log(`Successfully rendered ${entitiesRef.current.length} entities (center, craters, ${rings.length} rings with labels)`);
 
         // Cleanup function
         return () => {
@@ -274,8 +263,7 @@ export default function ImpactEffectPage() {
             });
             entitiesRef.current = [];
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [viewer, map]); // entitiesRef is a ref and doesn't need to be in deps
+    }, [viewer, map, entitiesRef]);
 
     if (!map || !panel || !meta) return (
         <div className="flex items-center justify-center h-screen bg-black text-white">
