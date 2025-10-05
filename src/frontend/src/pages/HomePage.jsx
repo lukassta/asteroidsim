@@ -128,9 +128,6 @@ const HomePage = () => {
           description="Explore asteroids and celestial bodies"
           content={
             <div>
-              <p className="text-gray-300">
-                Placeholder text
-              </p>
               <p className="text-gray-400 mt-4">
                 Click anywhere on the globe to select an impact location.
               </p>
