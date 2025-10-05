@@ -112,7 +112,7 @@ class SimulationsComputeView(APIView):
         )
 
         return_data = {
-            "id": "sha256:...",
+            "id": "id",
             "map": {
                 "center": {"lat": lat, "lon": lon},
                 "crater_transient_diameter_m": crater_diameter_trans,
@@ -207,6 +207,7 @@ class SimulationsComputeView(APIView):
                 "version": "1",
             },
         }
+
         # TODO
         # 1. get impact coordinates lat lon
         # 2. compute rings based on the 5 tresholds
@@ -215,6 +216,9 @@ class SimulationsComputeView(APIView):
 
         # TODO
         # RETURN
+
+        return Response({"data": return_data}, status=status.HTTP_200_OK)
+
 
 
 class SimulationsFetchView(APIView):
