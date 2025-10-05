@@ -1,5 +1,8 @@
 # ASTEROIDsim
 
+## Domain
+- [https://asteroidsim.com/]
+
 ## Setup
 1. Install (docker)[https://www.docker.com/get-started/]
 2. Download and unzip population map dataset (250m 1.1GB)[https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GPW4_GLOBE_R2015A/GHS_POP_GPW42015_GLOBE_R2015A_54009_250/] (1km 155MB)[https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GPW4_GLOBE_R2015A/GHS_POP_GPW42015_GLOBE_R2015A_54009_1k/]
