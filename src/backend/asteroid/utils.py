@@ -1,7 +1,8 @@
-from typing import Any, Dict
-import math
-import json
 import hashlib
+import json
+import math
+from typing import Any, Dict
+
 
 def normalize_params(params: Dict[str, Any]) -> Dict[str, Any]:
     """Return a new dict with defaults applied and fields rounded.
@@ -16,7 +17,7 @@ def normalize_params(params: Dict[str, Any]) -> Dict[str, Any]:
         "entry_speed_m_s": 3,
         "entry_angle_deg": 3,
         "azimuth_deg": 3,
-        "lat": 5,   # only used inside aim_point
+        "lat": 5,  # only used inside aim_point
         "lon": 5,
     }
 
@@ -53,11 +54,16 @@ def normalize_params(params: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(aim_point_param, dict):
         aim_point_param = {}
 
-    lat = _round_if_numeric("lat", aim_point_param.get("lat", AIM_POINT_DEFAULTS["lat"]))
-    lon = _round_if_numeric("lon", aim_point_param.get("lon", AIM_POINT_DEFAULTS["lon"]))
+    lat = _round_if_numeric(
+        "lat", aim_point_param.get("lat", AIM_POINT_DEFAULTS["lat"])
+    )
+    lon = _round_if_numeric(
+        "lon", aim_point_param.get("lon", AIM_POINT_DEFAULTS["lon"])
+    )
     normalized_params["aim_point"] = {**aim_point_param, "lat": lat, "lon": lon}
 
     return normalized_params
+
 
 def compute_simulation_id(normalized_params: Dict[str, Any]) -> str:
     """
@@ -70,7 +76,9 @@ def compute_simulation_id(normalized_params: Dict[str, Any]) -> str:
         str: simulation_id
     """
     # Ensure deterministic ordering and consistent formatting
-    serialized: str = json.dumps(normalized_params, sort_keys=True, separators=(",", ":"))
+    serialized: str = json.dumps(
+        normalized_params, sort_keys=True, separators=(",", ":")
+    )
 
     # Encode to bytes for hashing
     encoded: bytes = serialized.encode("utf-8")
@@ -80,7 +88,7 @@ def compute_simulation_id(normalized_params: Dict[str, Any]) -> str:
 
     # Return with clear prefix (so ID type is explicit)
     return simulation_id
-    
+
 
 def as_finite_positive_float(name: str, value: Any) -> float:
     """Require a real number (int/float), finite, and > 0.

@@ -4,11 +4,18 @@ import numpy as np
 import rioxarray
 import math
 from pyproj import Transformer
+
 from .constants import *
 from .utils import as_finite_positive_float
 from typing import Tuple, List, Any
 from pyproj import Geod
 
+
+
+# @lukas
+# --------- maybe call this file metrics.py and keep it strictly for functions that compute metrics?
+# --------- also, we should probably have similar styled functions, maybe im doing too much with the type hints
+# and as_finite_positive_float(), but i feel like an app like this should have the most robust calculation functions possible
 def get_population_in_area(latitude, longtitude, radius):
     """
     Inputs: impact longtitude, impact latitude, impact radius (m)
@@ -126,9 +133,10 @@ def calculate_impact_energy(mass_kg: float, velocity_m_s: float) -> float:
     mass_kg_validated = as_finite_positive_float("mass_kg", mass_kg)
     velocity_m_s_validated = as_finite_positive_float("velocity_m_s", velocity_m_s)
 
-    E_joules = 0.5 * mass_kg_validated * (velocity_m_s_validated ** 2)
+    E_joules = 0.5 * mass_kg_validated * (velocity_m_s_validated**2)
     E_mt = E_joules / J_PER_MT
     return E_mt
+
 
 def calculate_crater_diameter_transient(E_mt: float, material_type: str) -> float:
     """
@@ -148,14 +156,16 @@ def calculate_crater_diameter_transient(E_mt: float, material_type: str) -> floa
         allowed = ", ".join(sorted(CRATER_MATERIAL_SF.keys()))
         raise ValueError(f"material_type must be one of: {allowed}.")
 
-    crater_diameter_transient_m = CRATER_A * (E_mt_validated * scaling_factor * J_PER_MT) ** CRATER_B
+    crater_diameter_transient_m = (
+        CRATER_A * (E_mt_validated * scaling_factor * J_PER_MT) ** CRATER_B
+    )
     return crater_diameter_transient_m
 
 
 def calculate_crater_diameter_final(D_tc_m: float) -> float:
     """
     Calculate final rim-to-rim crater diameter from transient diameter.
-    
+
     Params:
         D_tc_m (float): transient crater diameter in meters (m)
 
@@ -166,6 +176,7 @@ def calculate_crater_diameter_final(D_tc_m: float) -> float:
 
     crater_diameter_final_m = D_tc_m_validated * SIMPLE_TRANSIENT_TO_FINAL_FACTOR
     return crater_diameter_final_m
+
 
 def calculate_crater_depth_final(D_f_m: float) -> float:
     """
@@ -209,4 +220,3 @@ def calculate_rings(E_mt: float, asteroid_diameter_m: float, material_type: str)
         })
 
     return {"rings": rings}
-
