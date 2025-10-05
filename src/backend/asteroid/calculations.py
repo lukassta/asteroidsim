@@ -1,8 +1,10 @@
+import math
 import os
+from typing import Any, List, Tuple
 
 import numpy as np
 import rioxarray
-from pyproj import Transformer
+from pyproj import Geod, Transformer
 
 from .constants import *
 from .utils import as_finite_positive_float
@@ -72,6 +74,50 @@ def get_population_in_area(latitude, longtitude, radius):
         return None
 
     return population
+
+
+def ground_intercept_from_spawn(
+    lat_deg: float,
+    lon_deg: float,
+    entry_angle_deg: float,  # from horizontal
+    azimuth_deg: float,  # bearing: 0°=North, 90°=East
+    spawn_height_m: float = 120_000.0,
+) -> Tuple[float, float, float]:
+    """
+    Compute ground intercept assuming straight-line path from height H.
+
+    Parameters:
+        lat_deg (float):
+        lon_deg (float):
+        entry_angle_deg (float):
+        azimuth_deg (float):
+        spawn_height_m (float):
+
+    Returns:
+        tuple: (impact_lat_deg, impact_lon_deg, ground_range_m)
+
+    Model:
+        L = H / tan(entry_angle)
+        east =  L * sin(az), north = L * cos(az), with az from North, clockwise.
+        Endpoint solved on WGS84 using forward geodesic with distance L and bearing az.
+    """
+    if not math.isfinite(spawn_height_m) or spawn_height_m <= 0:
+        raise ValueError("spawn_height_m must be finite and > 0.")
+    if not math.isfinite(entry_angle_deg):
+        raise ValueError("entry_angle_deg must be finite.")
+    if not (0.0 < entry_angle_deg < 90.0):
+        # tan(0) blows up; 90° means straight down (L≈0)
+        raise ValueError("entry_angle_deg must be in (0, 90) degrees.")
+    if not math.isfinite(azimuth_deg):
+        raise ValueError("azimuth_deg must be finite.")
+
+    # horizontal run
+    entry_rad = math.radians(entry_angle_deg)
+    L = spawn_height_m / math.tan(entry_rad)  # meters
+
+    # Use geodesic forward with distance L and bearing azimuth_deg (from North, CW)
+    fwd_lon, fwd_lat, _ = WGS84.fwd(lon_deg, lat_deg, azimuth_deg, L)
+    return fwd_lat, fwd_lon, L
 
 
 def calculate_impact_energy(mass_kg: float, velocity_m_s: float) -> float:
@@ -146,3 +192,39 @@ def calculate_crater_depth_final(D_f_m: float) -> float:
 
     crater_depth_final_m = D_f_m_validated * SIMPLE_CRATER_DEPTH_FACTOR
     return crater_depth_final_m
+
+
+# AI says this is incorrect?
+def calculate_ring_radius(
+    E_mt: float, pressure_pa: float, asteroid_diameter_m: float, material_type: str
+) -> float:
+    E_joules = E_mt * J_PER_MT
+    asteroid_radius_m = asteroid_diameter_m / 2.0
+    volume = (
+        (4.0 / 3.0)
+        * math.pi
+        * (CRATER_MATERIAL_SF[material_type] * asteroid_radius_m) ** 3.0
+    )
+    ring_radius_m = (CRATER_MATERIAL_SF[material_type] * asteroid_radius_m) * (
+        (E_joules * 3.0) / (pressure_pa * volume)
+    ) ** (1.0 / 3.0)
+    return ring_radius_m
+
+
+def calculate_rings(
+    E_mt: float, asteroid_diameter_m: float, material_type: str
+) -> Dict[str, List[Dict[str, Any]]]:
+    """Build the rings dict from pressure thresholds (kPa)."""
+    thresholds_kpa = [70, 50, 35, 20, 10, 3]
+
+    rings: Dict[str, Any] = {}
+    for kpa in thresholds_kpa:
+        radius_m = calculate_ring_radius(
+            E_mt,
+            kpa * 1_000.0,  # kPa -> Pa
+            asteroid_diameter_m,
+            material_type,
+        )
+        rings[f"kpa_{kpa}"] = radius_m
+
+    return rings
