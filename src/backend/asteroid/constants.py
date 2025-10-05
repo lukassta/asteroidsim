@@ -21,12 +21,12 @@ CRATER_MATERIAL_SF: Dict[str, float] = {
 }
 
 KPA_FATALITY_RATE: Dict[str, float] = {
-    "kpa_70": 0.9,
-    "kpa_50": 0.6,
-    "kpa_35": 0.3,
-    "kpa_20": 0.2,
-    "kpa_10": 0.1,
-    "kpa_3": 0.05,
+    "kpa_70": 0.6,
+    "kpa_50": 0.3,
+    "kpa_35": 0.09,
+    "kpa_20": 0.02,
+    "kpa_10": 0.0001,
+    "kpa_3": 0,
 }
 
 CRATER_A: float = 0.0162  # <-- document source

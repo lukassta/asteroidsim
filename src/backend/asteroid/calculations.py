@@ -130,6 +130,9 @@ def calculate_impact_energy(mass_kg: float, velocity_m_s: float) -> float:
     Returns:
         float: energy released in megatons of TNT (Mt).
     """
+    if mass_kg <= 0:
+        return 0
+
     mass_kg_validated = as_finite_positive_float("mass_kg", mass_kg)
     velocity_m_s_validated = as_finite_positive_float("velocity_m_s", velocity_m_s)
 
@@ -149,6 +152,10 @@ def calculate_crater_diameter_transient(E_mt: float, material_type: str) -> floa
     Returns:
         float: transient crater diameter (m)
     """
+
+    if E_mt <= 0:
+        return 0
+
     E_mt_validated = as_finite_positive_float("E_mt", E_mt)
     try:
         scaling_factor = CRATER_MATERIAL_SF[material_type]
@@ -172,6 +179,10 @@ def calculate_crater_diameter_final(D_tc_m: float) -> float:
     Returns:
         float: final rim-to-rim crater diameter in meters (m)
     """
+
+    if D_tc_m <= 0:
+        return 0
+
     D_tc_m_validated = as_finite_positive_float("D_tc_m", D_tc_m)
 
     crater_diameter_final_m = D_tc_m_validated * SIMPLE_TRANSIENT_TO_FINAL_FACTOR
@@ -188,6 +199,10 @@ def calculate_crater_depth_final(D_f_m: float) -> float:
     Returns:
         float: depth of a simple crater in meters (m)
     """
+
+    if D_f_m <= 0:
+        return 0
+
     D_f_m_validated = as_finite_positive_float("D_f_m", D_f_m)
 
     crater_depth_final_m = D_f_m_validated * SIMPLE_CRATER_DEPTH_FACTOR
@@ -198,6 +213,9 @@ def calculate_crater_depth_final(D_f_m: float) -> float:
 def calculate_ring_radius(
     E_mt: float, pressure_pa: float, asteroid_diameter_m: float, material_type: str
 ) -> float:
+    if E_mt == 0:
+        return 0
+
     E_joules = E_mt * J_PER_MT
     asteroid_radius_m = asteroid_diameter_m / 2.0
     volume = (
@@ -228,3 +246,11 @@ def calculate_rings(
         rings[f"kpa_{kpa}"] = radius_m
 
     return rings
+
+def caclulate_asteroid_impact_mass(mass, velocity, time, asteroid_density):
+    mass -= (velocity**2 * time  * 0.0025**(1/3)) / (asteroid_density**(1/3))
+
+    if mass < 0:
+        mass = 0
+
+    return mass
