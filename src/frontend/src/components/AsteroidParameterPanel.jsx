@@ -18,6 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+import {TooltipWrapper} from "./ToolTipWrapper.jsx";
 
 const preMadeAsteroids = [
     { name: 'Bennu', diameter: 492, density: 1200, velocity: 28000 },
@@ -106,15 +107,17 @@ const AsteroidControlPanel = ({ onLaunch, impactLocation, onAsteroidTypeChange, 
                     <div className="space-y-2">
                         <Label className="text-slate-300">Asteroid Diameter (m)</Label>
                         <div className="flex items-center space-x-2">
-                            <Slider
-                                value={[diameter]}
-                                min={10}
-                                max={1000}
-                                step={10}
-                                onValueChange={(val) => setDiameter(val[0])}
-                                className="flex-1"
-                                disabled={!isCustom}
-                            />
+                            <TooltipWrapper tooltipCallName="asteroidDiameter">
+                                <Slider
+                                    value={[diameter]}
+                                    min={10}
+                                    max={1000}
+                                    step={10}
+                                    onValueChange={(val) => setDiameter(val[0])}
+                                    className="flex-1"
+                                    disabled={!isCustom}
+                                />
+                            </TooltipWrapper>
                             <Input
                                 type="number"
                                 value={diameter}
@@ -130,15 +133,17 @@ const AsteroidControlPanel = ({ onLaunch, impactLocation, onAsteroidTypeChange, 
                     <div className="space-y-2">
                         <Label className="text-slate-300">Material Density (kg/m³)</Label>
                         <div className="flex items-center space-x-2">
-                            <Slider
-                                value={[density]}
-                                min={500}
-                                max={8000}
-                                step={100}
-                                onValueChange={(val) => setDensity(val[0])}
-                                className="flex-1"
-                                disabled={!isCustom}
-                            />
+                            <TooltipWrapper tooltipCallName="materialDensity">
+                                <Slider
+                                    value={[density]}
+                                    min={500}
+                                    max={8000}
+                                    step={100}
+                                    onValueChange={(val) => setDensity(val[0])}
+                                    className="flex-1"
+                                    disabled={!isCustom}
+                                />
+                            </TooltipWrapper>
                             <Input
                                 type="number"
                                 value={density}
@@ -154,15 +159,17 @@ const AsteroidControlPanel = ({ onLaunch, impactLocation, onAsteroidTypeChange, 
                     <div className="space-y-2">
                         <Label className="text-slate-300">Velocity Before Entry (m/s)</Label>
                         <div className="flex items-center space-x-2">
+                        <TooltipWrapper tooltipCallName="asteroidVelocity">        
                             <Slider
-                                value={[velocity]}
-                                min={11000}
-                                max={72000}
-                                step={100}
-                                onValueChange={(val) => setVelocity(val[0])}
-                                className="flex-1"
-                                disabled={!isCustom}
-                            />
+                                    value={[velocity]}
+                                    min={11000}
+                                    max={72000}
+                                    step={100}
+                                    onValueChange={(val) => setVelocity(val[0])}
+                                    className="flex-1"
+                                    disabled={!isCustom}
+                                />
+                        </TooltipWrapper>
                             <Input
                                 type="number"
                                 value={velocity}
@@ -181,10 +188,12 @@ const AsteroidControlPanel = ({ onLaunch, impactLocation, onAsteroidTypeChange, 
                             value={structure}
                             onValueChange={setStructure}
                         >
+                            <TooltipWrapper tooltipCallName="structureType">
                             <SelectTrigger className="w-full bg-slate-900 text-slate-200 border-slate-600">
-                                <SelectValue placeholder="Select structure type" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-slate-900 text-slate-200 border-slate-600 z-[100]" sideOffset={5}>
+                                    <SelectValue placeholder="Select structure type" />
+                                </SelectTrigger>
+                            </TooltipWrapper>
+                        <SelectContent className="bg-slate-900 text-slate-200 border-slate-600 z-[100]" sideOffset={5}>
                                 {structureOptions.map((type) => (
                                     <SelectItem key={type.value} value={type.value}>
                                         {type.label}
@@ -197,26 +206,30 @@ const AsteroidControlPanel = ({ onLaunch, impactLocation, onAsteroidTypeChange, 
                     {/* Entry Angle */}
                     <div className="space-y-2">
                         <Label className="text-slate-300">Entry Angle (° Horizontal)</Label>
-                        <Slider
-                            value={[entryAngle]}
-                            min={0}
-                            max={90}
-                            step={1}
-                            onValueChange={(val) => setEntryAngle(val[0])}
-                        />
+                        <TooltipWrapper tooltipCallName="horizontalAngle">
+                            <Slider
+                                value={[entryAngle]}
+                                min={0}
+                                max={90}
+                                step={1}
+                                onValueChange={(val) => setEntryAngle(val[0])}
+                            />
+                        </TooltipWrapper>
                         <p className="text-sm">{entryAngle}°</p>
                     </div>
 
                     {/* Azimuth */}
                     <div className="space-y-2">
                         <Label className="text-slate-300">Entry Angle (° Azimuth)</Label>
-                        <Slider
-                            value={[azimuth]}
-                            min={-90}
-                            max={90}
-                            step={1}
-                            onValueChange={(val) => setAzimuth(val[0])}
-                        />
+                        <TooltipWrapper tooltipCallName="azimuthAngle">    
+                            <Slider
+                                value={[azimuth]}
+                                min={-90}
+                                max={90}
+                                step={1}
+                                onValueChange={(val) => setAzimuth(val[0])}
+                            />
+                        </TooltipWrapper>
                         <p className="text-sm">{azimuth}°</p>
                     </div>
 
@@ -224,22 +237,27 @@ const AsteroidControlPanel = ({ onLaunch, impactLocation, onAsteroidTypeChange, 
                     <div className="space-y-2">
                         <Label className="text-slate-300">Aim Point (Lat°, Lon°)</Label>
                         <div className="flex space-x-2">
-                            <Input
-                                type="number"
-                                placeholder="Latitude"
-                                value={lat}
-                                onChange={(e) => setLat(Number(e.target.value))}
-                                className="w-1/2 bg-slate-900 text-slate-200 border-slate-600 
-                           [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                            <Input
-                                type="number"
-                                placeholder="Longitude"
-                                value={lon}
-                                onChange={(e) => setLon(Number(e.target.value))}
-                                className="w-1/2 bg-slate-900 text-slate-200 border-slate-600 
-                           [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
+                            <TooltipWrapper tooltipCallName="aimPoint">
+                                <Input
+                                    type="number"
+                                    placeholder="Latitude"
+                                    value={lat}
+                                    onChange={(e) => setLat(Number(e.target.value))}
+                                    className="w-1/2 bg-slate-900 text-slate-200 border-slate-600 
+        [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                            </TooltipWrapper>
+
+                            <TooltipWrapper tooltipCallName="aimPoint">
+                                <Input
+                                    type="number"
+                                    placeholder="Longitude"
+                                    value={lon}
+                                    onChange={(e) => setLon(Number(e.target.value))}
+                                    className="w-1/2 bg-slate-900 text-slate-200 border-slate-600 
+        [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                            </TooltipWrapper>
                         </div>
                     </div>
                 </CardContent>

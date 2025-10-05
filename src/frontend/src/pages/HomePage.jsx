@@ -132,7 +132,7 @@ const HomePage = () => {
                 Placeholder text
               </p>
               <p className="text-gray-400 mt-4">
-                Click anywhere on the globe to select an impact location.
+                Click anywhere on the globe to mark where the asteroid enters the atmosphere.
               </p>
             </div>
           }
