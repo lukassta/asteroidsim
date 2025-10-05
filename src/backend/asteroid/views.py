@@ -1,24 +1,24 @@
+from typing import Any, Dict
+
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from asteroid.models import Asteroid
 from asteroid.serializers import BriefAsteroidSerializer
 
-from .calculations import (
-    calculate_crater_depth_final,
-    calculate_crater_diameter_final,
-    calculate_crater_diameter_transient,
-    calculate_impact_energy, calculate_rings,
-    get_population_in_area,
-    caclulate_asteroid_impact_mass)
+from .api_calls import call_sbdb_lookup, extract_spkid
+from .calculations import (caclulate_asteroid_impact_mass,
+                           calculate_crater_depth_final,
+                           calculate_crater_diameter_final,
+                           calculate_crater_diameter_transient,
+                           calculate_impact_energy, calculate_rings,
+                           get_population_in_area)
 from .constants import KPA_FATALITY_RATE
 from .physics_helpers import calculate_mass, calculate_volume
 from .utils import compute_simulation_id, normalize_params
-from typing import Dict, Any
-from .api_calls import call_sbdb_lookup
-
 
 
 # are we still doing the character thing to need this? @lukas
@@ -55,7 +55,9 @@ class SimulationsComputeView(APIView):
 
         asteroid_volume = calculate_volume(asteroid_diameter)
         asteroid_mass = calculate_mass(asteroid_volume, asteroid_density)
-        asteroid_mass_on_impact = caclulate_asteroid_impact_mass(asteroid_mass, velocity, 156.41, asteroid_density)
+        asteroid_mass_on_impact = caclulate_asteroid_impact_mass(
+            asteroid_mass, velocity, 156.41, asteroid_density
+        )
 
         impact_energy = calculate_impact_energy(asteroid_mass_on_impact, velocity)
         crater_diameter_trans = calculate_crater_diameter_transient(
@@ -121,7 +123,7 @@ class SimulationsComputeView(APIView):
         kpa_10_casulties = kpa_10_population * KPA_FATALITY_RATE.get("kpa_10", 0)
         kpa_3_casulties = kpa_3_population * KPA_FATALITY_RATE.get("kpa_3", 0)
 
-        print(kpa_70_population,  kpa_70_casulties)
+        print(kpa_70_population, kpa_70_casulties)
         total_casulties = (
             crater_casulties
             + kpa_70_casulties
@@ -236,13 +238,18 @@ class SimulationsFetchView(APIView):
     def get(self, request, simulation_id):
         pass
 
-class ResolveSpkIdByNameView(APIView):
+
+class NeoIdView(APIView):
     def get(self, request):
         name = (request.query_params.get("name") or "").strip()
+
         if not name:
             return JsonResponse(
                 {"detail": "Query parameter 'name' is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         payload = call_sbdb_lookup(name)
+        id = extract_spkid(payload)
+
+        return Response({"neo_id": id}, status=status.HTTP_200_OK)

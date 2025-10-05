@@ -9,6 +9,7 @@ from pyproj import Geod, Transformer
 from .constants import *
 from .utils import as_finite_positive_float
 
+
 def get_population_in_area(latitude, longtitude, radius):
     """
     Inputs: impact longtitude, impact latitude, impact radius (m)
@@ -203,6 +204,7 @@ def calculate_crater_depth_final(D_f_m: float) -> float:
     crater_depth_final_m = D_f_m_validated * SIMPLE_CRATER_DEPTH_FACTOR
     return crater_depth_final_m
 
+
 def calculate_ring_radius(
     E_mt: float, pressure_pa: float, asteroid_diameter_m: float, material_type: str
 ) -> float:
@@ -240,13 +242,15 @@ def calculate_rings(
 
     return rings
 
+
 def caclulate_asteroid_impact_mass(mass, velocity, time, asteroid_density):
-    mass -= (velocity**2 * time  * 0.0025**(1/3)) / (asteroid_density**(1/3))
+    mass -= (velocity**2 * time * 0.0025 ** (1 / 3)) / (asteroid_density ** (1 / 3))
 
     if mass < 0:
         mass = 0
 
     return mass
+
 
 def calculate_trajectory():
     pass
