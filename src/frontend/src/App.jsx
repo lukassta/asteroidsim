@@ -7,6 +7,7 @@ import AsteroidSelectPage from './pages/AsteroidSelectPage.jsx'
 import AsteroidSimulationPage from './pages/AsteroidSimulationPage.jsx'
 import AboutPage from './pages/AboutPage.jsx'
 import ImpactEffectPage from './pages/ImpactEffectPage.jsx'
+import SolarCenteredSimulation from './pages/SolarCenteredSimulation.jsx'
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
           <Route path="/asteroid-select" element={<AsteroidSelectPage />} />
           <Route path="/asteroid-simulation" element={<AsteroidSimulationPage />} />
           <Route path="/impact-effects" element={<ImpactEffectPage />} />
+          <Route path="/solar-system" element={<SolarCenteredSimulation />} />
           <Route path="/about" element={<AboutPage />} />
         </Routes>
       </CesiumProvider>
