@@ -69,7 +69,8 @@ const AsteroidControlPanel = ({ onLaunch, impactLocation, onAsteroidTypeChange, 
             velocityKm: velocity / 1000.0,
             entryAngle,
             azimuth,
-            aimPoint: { lat, lon },
+            lat,
+            lon,
             materialType: structure,
         })
 

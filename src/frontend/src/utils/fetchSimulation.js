@@ -1,6 +1,6 @@
 export async function fetchSimulation() {
     try {
-        /*const response = await fetch("https://asteroidsim.com/api/simulations");
+        const response = await fetch("https://asteroidsim.com/api/simulations");
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
 
@@ -9,8 +9,7 @@ export async function fetchSimulation() {
             throw new Error("Invalid simulation data structure");
         }
 
-        return data;*/
-        return null;
+        return data;
     } catch (error) {
         console.warn("Fetching /api/simulations failed, using simulationExample.json", error);
 
