@@ -6,9 +6,10 @@ from rest_framework.views import APIView
 from asteroid.models import Asteroid
 from asteroid.serializers import BriefAsteroidSerializer
 
-from .calculations import get_population_in_area
+from .calculations import get_population_in_area, calculate_impact_energy, calculate_crater_diameter_transient, calculate_crater_diameter_final, calculate_crater_depth_final
 from .constants import KPA_FATALITY_RATE
 from .utils import compute_simulation_id, normalize_params
+from .physics_helpers import calculate_mass, calculate_volume
 
 
 # are we still doing the character thing to need this? @lukas
@@ -36,15 +37,19 @@ class SimulationsComputeView(APIView):
 
         normalized_params = normalize_params(raw_params)
 
+        asteroid_composition = normalized_params.get("material_type", 0)
+        asteroid_density = normalized_params.get("density_kg_m3", 0)
+        asteroid_diameter = normalized_params.get("diameter_m", 0)
         lat = normalized_params.get("lat", 0)
         lon = normalized_params.get("lon", 0)
         velocity = normalized_params.get("entry_velocity_m_s", 0)
 
+        asteroid_volume = calculate_volume(asteroid_diameter )
         asteroid_mass = calculate_mass(asteroid_volume, asteroid_density)
 
         impact_energy = calculate_impact_energy(asteroid_mass, velocity)
-        crater_diameter_trans = calculate_crater_diameter_transient(impact_energy)
-        crater_diameter = diamcalculate_crater_diameter_final(crater_diameter_trans)
+        crater_diameter_trans = calculate_crater_diameter_transient(impact_energy, asteroid_composition)
+        crater_diameter = calculate_crater_diameter_final(crater_diameter_trans)
         crater_depth = calculate_crater_depth_final(crater_diameter)
 
         # TODO
@@ -55,7 +60,7 @@ class SimulationsComputeView(APIView):
         kpa_10_radius = 0
         kpa_3_radius = 0
 
-        crater_population += get_population_in_area(lat, lon, crater_diameter / 2)
+        crater_population = get_population_in_area(lat, lon, crater_diameter / 2)
         kpa_70_population = (
             get_population_in_area(lat, lon, kpa_70_radius) - crater_population
         )
@@ -131,7 +136,7 @@ class SimulationsComputeView(APIView):
             "panel": {
                 "energy_released_megatons": 120.0,
                 "crater_final": {
-                    "formed": true,
+                    "formed": True,
                     "diameter_m": crater_diameter,
                     "depth_m": crater_depth,
                 },
