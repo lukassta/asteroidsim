@@ -10,12 +10,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Play, Pause, RotateCcw, Upload } from 'lucide-react'
 import 'cesium/Build/Cesium/Widgets/widgets.css'
 
-// Available asteroid models
+// Available asteroid models with their native model sizes (in model units)
+// These are approximate diameters based on the GLTF bounding boxes
 const asteroidModels = [
-    { value: 'bennu', label: 'Bennu', path: '/src/assets/bennu/Bennu.gltf' },
-    { value: 'gaspra', label: 'Gaspra', path: '/src/assets/gaspra/gaspra.gltf' },
-    { value: 'asteroid2', label: 'Generic Asteroid 2', path: '/src/assets/generic_asteroid_2/generic_asteroid_2.gltf' },
-    { value: 'asteroid3', label: 'Generic Asteroid 3', path: '/src/assets/generic_asteroid_3/generic_asteroid_3.gltf' }
+    { 
+        value: 'bennu', 
+        label: 'Bennu', 
+        path: '/src/assets/bennu/Bennu.gltf',
+        nativeSize: 550 // Model spans roughly -277 to +274 units, real Bennu is 492m
+    },
+    { 
+        value: 'gaspra', 
+        label: 'Gaspra', 
+        path: '/src/assets/gaspra/gaspra.gltf',
+        nativeSize: 12900 // Model spans roughly -6344 to +6588 units, real Gaspra is ~18km
+    },
+    { 
+        value: 'asteroid2', 
+        label: 'Generic Asteroid 2', 
+        path: '/src/assets/generic_asteroid_2/generic_asteroid_2.gltf',
+        nativeSize: 2 // Model spans roughly -1.18 to +0.82 units
+    },
+    { 
+        value: 'asteroid3', 
+        label: 'Generic Asteroid 3', 
+        path: '/src/assets/generic_asteroid_3/generic_asteroid_3.gltf',
+        nativeSize: 2 // Model spans roughly -1.03 to +0.97 units
+    }
 ]
 
 const AsteroidSimulationPage = () => {
@@ -27,13 +48,23 @@ const AsteroidSimulationPage = () => {
     const [selectedAsteroid, setSelectedAsteroid] = useState('bennu')
     const [czmlSource, setCzmlSource] = useState(null)
     const [asteroidSize, setAsteroidSize] = useState(500) // Size in meters
+    const [cartesianInput, setCartesianInput] = useState('[0, 0, 0, 100000]') // Cartographic degrees input (time, lon, lat, alt)
     const fileInputRef = useRef(null)
 
     // Calculate scale factor based on asteroid size in meters
-    const calculateScale = (sizeInMeters) => {
-        // Base scale factor - adjust this to match your model's native size
-        // Assuming models are roughly 1 unit = 1 meter in the GLTF file
-        return sizeInMeters
+    const calculateScale = (sizeInMeters, modelValue) => {
+        // Find the model's native size
+        const model = asteroidModels.find(m => m.value === modelValue)
+        if (!model || !model.nativeSize) {
+            console.warn(`Model ${modelValue} has no native size, using 1:1 scale`)
+            return 1
+        }
+        
+        // Calculate scale: desired size / native model size
+        // If model native size is 550 units and we want 500 meters, scale = 500/550 ≈ 0.909
+        const scale = sizeInMeters / model.nativeSize
+        console.log(`Model: ${modelValue}, Native: ${model.nativeSize}, Desired: ${sizeInMeters}m, Scale: ${scale.toFixed(3)}`)
+        return scale
     }
 
     // Initialize Cesium Viewer
@@ -123,11 +154,9 @@ const AsteroidSimulationPage = () => {
                     // Update the model to use selected asteroid
                     const asteroidModel = asteroidModels.find(a => a.value === selectedAsteroid)
                     if (asteroidModel) {
-                        const scale = calculateScale(asteroidSize)
+                        const scale = calculateScale(asteroidSize, selectedAsteroid)
                         entity.model = new Cesium.ModelGraphics({
                             uri: asteroidModel.path,
-                            minimumPixelSize: 64,
-                            maximumScale: 50000,
                             scale: scale
                         })
                     }
@@ -179,96 +208,88 @@ const AsteroidSimulationPage = () => {
         reader.readAsText(file)
     }
 
-    // Create a sample CZML trajectory
+    // Create a CZML trajectory with custom Cartesian coordinates
     const createSampleTrajectory = () => {
-        const startTime = Cesium.JulianDate.now()
-        const stopTime = Cesium.JulianDate.addSeconds(startTime, 3600, new Cesium.JulianDate())
-
-        const czml = [
-            {
-                id: "document",
-                name: "Sample Asteroid Trajectory",
-                version: "1.0",
-                clock: {
-                    interval: `${Cesium.JulianDate.toIso8601(startTime)}/${Cesium.JulianDate.toIso8601(stopTime)}`,
-                    currentTime: Cesium.JulianDate.toIso8601(startTime),
-                    multiplier: 10,
-                    range: "LOOP_STOP",
-                    step: "SYSTEM_CLOCK_MULTIPLIER"
+        try {
+            // Parse the cartesian input
+            let cartesianArray
+            try {
+                cartesianArray = JSON.parse(cartesianInput)
+                if (!Array.isArray(cartesianArray)) {
+                    throw new Error('Input must be an array')
                 }
-            },
-            {
-                id: "asteroid_sample",
-                name: "Sample Asteroid",
-                availability: `${Cesium.JulianDate.toIso8601(startTime)}/${Cesium.JulianDate.toIso8601(stopTime)}`,
-                position: {
-                    epoch: Cesium.JulianDate.toIso8601(startTime),
-                    cartographicDegrees: generateOrbitPath(startTime, 3600)
-                },
-                model: {
-                    gltf: asteroidModels.find(a => a.value === selectedAsteroid)?.path || asteroidModels[0].path,
-                    minimumPixelSize: 64,
-                    maximumScale: 50000,
-                    scale: calculateScale(asteroidSize)
-                },
-                path: {
-                    material: {
-                        polylineOutline: {
-                            color: {
-                                rgba: [255, 255, 0, 255]
-                            },
-                            outlineColor: {
-                                rgba: [255, 0, 0, 255]
-                            },
-                            outlineWidth: 2
-                        }
-                    },
-                    width: 3,
-                    leadTime: 0,
-                    trailTime: 3600,
-                    resolution: 5
-                }
+            } catch {
+                alert('Invalid format. Please provide a valid array like [0, 0, 0, 100000] (time, longitude, latitude, altitude)')
+                return
             }
-        ]
 
-        setCzmlData(czml)
-        loadCzmlData(czml)
-    }
+            const czml = [
+                {
+                    id: "document",
+                    name: "Sample Asteroid Near-Earth Trajectory",
+                    version: "1.0",
+                    clock: {
+                        interval: "2024-10-05T00:00:00Z/2024-10-05T06:00:00Z",
+                        currentTime: "2024-10-05T00:00:00Z",
+                        multiplier: 1,
+                        range: "LOOP_STOP",
+                        step: "SYSTEM_CLOCK_MULTIPLIER"
+                    }
+                },
+                {
+                    id: "asteroid_apophis",
+                    name: "Sample Near-Earth Asteroid",
+                    description: "A sample asteroid trajectory demonstrating a close Earth approach",
+                    availability: "2024-10-05T00:00:00Z/2024-10-05T06:00:00Z",
+                    position: {
+                        epoch: "2024-10-05T00:00:00Z",
+                        interpolationAlgorithm: "LAGRANGE",
+                        interpolationDegree: 5,
+                        cartographicDegrees: cartesianArray
+                    },
+                    label: {
+                        text: "Near-Earth Asteroid",
+                        font: "14pt monospace",
+                        style: "FILL_AND_OUTLINE",
+                        fillColor: {
+                            rgba: [255, 255, 255, 255]
+                        },
+                        outlineColor: {
+                            rgba: [0, 0, 0, 255]
+                        },
+                        outlineWidth: 2,
+                        horizontalOrigin: "LEFT",
+                        pixelOffset: {
+                            cartesian2: [12, 0]
+                        },
+                        show: true
+                    },
+                    path: {
+                        show: true,
+                        leadTime: 0,
+                        trailTime: 21600,
+                        width: 3,
+                        resolution: 120,
+                        material: {
+                            solidColor: {
+                                color: {
+                                    rgba: [255, 165, 0, 255]
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
 
-    // Generate orbital path (simple elliptical orbit around Earth)
-    const generateOrbitPath = (startTime, duration) => {
-        const positions = []
-        const steps = 100
-        const earthRadius = 6371000 // meters
-        const orbitAltitude = 1000000 // 1000 km altitude
-        const orbitRadius = earthRadius + orbitAltitude
-
-        for (let i = 0; i <= steps; i++) {
-            const time = (i / steps) * duration
-            const angle = (i / steps) * 2 * Math.PI
-            
-            // Create elliptical orbit
-            const a = orbitRadius * 1.5 // semi-major axis
-            const b = orbitRadius // semi-minor axis
-            const e = Math.sqrt(1 - (b * b) / (a * a)) // eccentricity
-            
-            const r = a * (1 - e * e) / (1 + e * Math.cos(angle))
-            const x = r * Math.cos(angle)
-            const y = r * Math.sin(angle)
-            const z = r * Math.sin(angle * 2) * 0.1 // slight inclination
-            
-            // Convert Cartesian to geodetic
-            const cartesian = new Cesium.Cartesian3(x, y, z)
-            const cartographic = Cesium.Cartographic.fromCartesian(cartesian)
-            const lon = Cesium.Math.toDegrees(cartographic.longitude)
-            const lat = Cesium.Math.toDegrees(cartographic.latitude)
-            const alt = r - earthRadius
-
-            positions.push(time, lon, lat, alt)
+            setCzmlData(czml)
+            loadCzmlData(czml)
+        } catch (error) {
+            console.error('Error creating trajectory:', error)
+            alert('Error creating trajectory. Please check your input.')
         }
-
-        return positions
     }
+
+
 
     // Playback controls
     const togglePlayback = () => {
@@ -296,11 +317,9 @@ const AsteroidSimulationPage = () => {
                 if (entity.id.toLowerCase().includes('asteroid') || entity.model) {
                     const asteroidModel = asteroidModels.find(a => a.value === selectedAsteroid)
                     if (asteroidModel) {
-                        const scale = calculateScale(asteroidSize)
+                        const scale = calculateScale(asteroidSize, selectedAsteroid)
                         entity.model = new Cesium.ModelGraphics({
                             uri: asteroidModel.path,
-                            minimumPixelSize: 64,
-                            maximumScale: 50000,
                             scale: scale
                         })
                     }
@@ -373,11 +392,37 @@ const AsteroidSimulationPage = () => {
                         <p className="text-xs text-slate-400">
                             Reference: Bennu (492m), Tunguska (60m), Chelyabinsk (20m)
                         </p>
+                        <p className="text-xs text-blue-400">
+                            Scale factor: {calculateScale(asteroidSize, selectedAsteroid).toFixed(3)}x
+                        </p>
                     </div>
+
+                    {/* Cartographic Degrees Input */}
+                    <div className="space-y-2">
+                        <Label className="text-slate-300">Cartographic Degrees</Label>
+                        <Input
+                            type="text"
+                            value={cartesianInput}
+                            onChange={(e) => setCartesianInput(e.target.value)}
+                            placeholder="[0, 0, 0, 100000]"
+                            className="bg-slate-800 border-slate-600 text-slate-100 font-mono text-sm"
+                        />
+                        <p className="text-xs text-slate-400">
+                            Enter array format: [time, longitude, latitude, altitude, ...]
+                        </p>
+                    </div>
+
+                    {/* Generate Trajectory Button */}
+                    <Button
+                        onClick={createSampleTrajectory}
+                        className="w-full bg-blue-600 hover:bg-blue-700"
+                    >
+                        Generate Trajectory
+                    </Button>
 
                     {/* File Upload */}
                     <div className="space-y-2">
-                        <Label className="text-slate-300">Upload CZML File</Label>
+                        <Label className="text-slate-300">Or Upload CZML File</Label>
                         <input
                             ref={fileInputRef}
                             type="file"
@@ -394,14 +439,6 @@ const AsteroidSimulationPage = () => {
                             Upload CZML
                         </Button>
                     </div>
-
-                    {/* Sample Trajectory */}
-                    <Button
-                        onClick={createSampleTrajectory}
-                        className="w-full bg-blue-600 hover:bg-blue-700"
-                    >
-                        Generate Sample Trajectory
-                    </Button>
 
                     {/* Playback Controls */}
                     {czmlData && (

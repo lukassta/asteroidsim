@@ -10,7 +10,6 @@ import CesiumViewer from "../CesiumViewer";
 // Helper function to normalize simulation data and ensure all numbers are properly typed
 function normalizeSimulationData(data) {
     if (!data || !data.map || !data.panel || !data.meta) {
-        console.error("Invalid data structure:", data);
         return null;
     }
 
