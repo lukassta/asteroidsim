@@ -7,6 +7,52 @@ import { fetchSimulation } from "../utils/fetchSimulation";
 import { useCesium } from "../context/CesiumContext";
 import CesiumViewer from "../CesiumViewer";
 
+// Helper function to normalize simulation data and ensure all numbers are properly typed
+function normalizeSimulationData(data) {
+    if (!data || !data.map || !data.panel || !data.meta) {
+        console.error("Invalid data structure:", data);
+        return null;
+    }
+
+    return {
+        id: data.id,
+        map: {
+            center: {
+                lat: parseFloat(data.map.center.lat),
+                lon: parseFloat(data.map.center.lon)
+            },
+            crater_transient_diameter_m: parseFloat(data.map.crater_transient_diameter_m),
+            crater_final_diameter_m: parseFloat(data.map.crater_final_diameter_m),
+            rings: data.map.rings.map(ring => ({
+                ...ring,
+                threshold_kpa: parseFloat(ring.threshold_kpa),
+                radius_m: parseFloat(ring.radius_m)
+            }))
+        },
+        panel: {
+            energy_released_megatons: parseFloat(data.panel.energy_released_megatons),
+            crater_final: {
+                formed: data.panel.crater_final.formed,
+                diameter_m: parseFloat(data.panel.crater_final.diameter_m),
+                depth_m: parseFloat(data.panel.crater_final.depth_m)
+            },
+            rings: data.panel.rings.map(ring => ({
+                ...ring,
+                threshold_kpa: parseFloat(ring.threshold_kpa),
+                radius_m: parseFloat(ring.radius_m),
+                arrival_time_s: parseFloat(ring.arrival_time_s),
+                delta_to_next_s: parseFloat(ring.delta_to_next_s),
+                population: parseInt(ring.population, 10),
+                estimated_deaths: parseInt(ring.estimated_deaths, 10)
+            })),
+            totals: data.panel.totals ? {
+                total_estimated_deaths: parseInt(data.panel.totals.total_estimated_deaths, 10)
+            } : { total_estimated_deaths: 0 }
+        },
+        meta: data.meta
+    };
+}
+
 export default function ImpactEffectPage() {
     const location = useLocation();
     const simulationData = location.state?.simulationData;
@@ -15,11 +61,13 @@ export default function ImpactEffectPage() {
     console.log("simulationData:", simulationData);
     console.log("simulationData keys:", simulationData ? Object.keys(simulationData) : "none");
     
-    // Initialize state with simulationData if available
-    const [id, setId] = useState(simulationData?.id || "");
-    const [map, setMap] = useState(simulationData?.map || null);
-    const [panel, setPanel] = useState(simulationData?.panel || null);
-    const [meta, setMeta] = useState(simulationData?.meta || null);
+    // Normalize and initialize state with simulationData if available
+    const normalizedData = simulationData ? normalizeSimulationData(simulationData) : null;
+    
+    const [id, setId] = useState(normalizedData?.id || "");
+    const [map, setMap] = useState(normalizedData?.map || null);
+    const [panel, setPanel] = useState(normalizedData?.panel || null);
+    const [meta, setMeta] = useState(normalizedData?.meta || null);
     const { viewer, entitiesRef } = useCesium();
     
     console.log("Initial state - map:", !!map, "panel:", !!panel, "meta:", !!meta);
@@ -85,34 +133,42 @@ export default function ImpactEffectPage() {
                 console.log("Using dataSource:", dataSource);
                 console.log("dataSource.map:", dataSource.map);
                 
-                if (!dataSource.map || !dataSource.panel || !dataSource.meta) {
+                const normalized = normalizeSimulationData(dataSource);
+                
+                if (!normalized) {
                     console.error("Invalid simulation data structure! Missing required fields.");
                     console.log("Falling back to fetch default simulation...");
                     // Fallback to fetching example data
                     fetchSimulation().then((data) => {
                         console.log("Fetched fallback simulation data:", data);
-                        setId(data.id);
-                        setMap(data.map);
-                        setPanel(data.panel);
-                        setMeta(data.meta);
+                        const normalizedFallback = normalizeSimulationData(data);
+                        if (normalizedFallback) {
+                            setId(normalizedFallback.id);
+                            setMap(normalizedFallback.map);
+                            setPanel(normalizedFallback.panel);
+                            setMeta(normalizedFallback.meta);
+                        }
                     }).catch((error) => {
                         console.error("Error fetching fallback simulation data:", error);
                     });
                 } else {
-                    setId(dataSource.id || simulationData.id || "");
-                    setMap(dataSource.map);
-                    setPanel(dataSource.panel);
-                    setMeta(dataSource.meta);
+                    setId(normalized.id);
+                    setMap(normalized.map);
+                    setPanel(normalized.panel);
+                    setMeta(normalized.meta);
                 }
             } else {
                 // Otherwise, fetch from the GET endpoint (fallback for direct navigation)
                 console.log("No simulation data in navigation state, fetching from API...");
                 fetchSimulation().then((data) => {
                     console.log("Fetched simulation data:", data);
-                    setId(data.id);
-                    setMap(data.map);
-                    setPanel(data.panel);
-                    setMeta(data.meta);
+                    const normalized = normalizeSimulationData(data);
+                    if (normalized) {
+                        setId(normalized.id);
+                        setMap(normalized.map);
+                        setPanel(normalized.panel);
+                        setMeta(normalized.meta);
+                    }
                 }).catch((error) => {
                     console.error("Error fetching simulation data:", error);
                 });
