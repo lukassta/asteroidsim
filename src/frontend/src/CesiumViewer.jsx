@@ -14,9 +14,11 @@ function CesiumViewer() {
         // Set your Cesium Ion access token
         Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmYmQwNDcxYi1hNzg0LTQ5MDMtOGU5OC1iMjAzMTE1NDBiMDkiLCJpZCI6MzQ2OTAzLCJpYXQiOjE3NTk1MDMzMDl9.evML2LxnRfcQ_WY8dGa8YzObvbt25oz6GfXdxGaG_eY'
 
-        // Create the viewer
+        // Create the viewer with aerial imagery and labels
         viewerRef.current = new Cesium.Viewer(cesiumContainer.current, {
             terrain: Cesium.Terrain.fromWorldTerrain(),
+            resolutionScale: 1.0,
+            scene3DOnly: true,
             baseLayer: Cesium.ImageryLayer.fromProviderAsync(
                 Cesium.IonImageryProvider.fromAssetId(
                     3830183
@@ -28,7 +30,7 @@ function CesiumViewer() {
             sceneModePicker: false,
             navigationHelpButton: false,
             animation: false,
-            timeline: false
+            timeline: false,
         })
 
 
@@ -41,8 +43,33 @@ function CesiumViewer() {
             destination: Cesium.Cartesian3.fromDegrees(0, 20, 20000000),
         })
 
+        // Force canvas to render at higher resolution
+        const canvas = viewerRef.current.canvas
+        const pixelRatio = 1.0
+        const width = canvas.clientWidth
+        const height = canvas.clientHeight
+
+        canvas.width = width * pixelRatio
+        canvas.height = height * pixelRatio
+
+        // Handle window resize
+        const handleResize = () => {
+            if (viewerRef.current) {
+                viewerRef.current.resize()
+                const canvas = viewerRef.current.canvas
+                const pixelRatio = window.devicePixelRatio || 1.5
+                const width = canvas.clientWidth
+                const height = canvas.clientHeight
+                canvas.width = width * pixelRatio
+                canvas.height = height * pixelRatio
+            }
+        }
+
+        window.addEventListener('resize', handleResize)
+
         // Cleanup
         return () => {
+            window.removeEventListener('resize', handleResize)
             if (viewerRef.current) {
                 viewerRef.current.destroy()
                 setViewer(null)

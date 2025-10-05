@@ -1,15 +1,48 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useCesium } from '../context/CesiumContext';
 import * as Cesium from 'cesium';
 import InfoCard from '../components/InfoCard';
 import AsteroidParameterPanel from '../components/AsteroidParameterPanel';
 
+// Asteroid model configurations
+const ASTEROID_MODELS = {
+  'Bennu': {
+    name: 'Bennu Asteroid',
+    modelPath: '/src/assets/bennu/Bennu.gltf',
+    scale: 20000,
+    cameraDistance: 2500,
+  },
+  'Gaspra': {
+    name: 'Gaspra Asteroid',
+    modelPath: '/src/assets/gaspra/gaspra.gltf',
+    scale: 20000,
+    cameraDistance: 40000,
+  },
+  'Ryugu': {
+    name: 'Generic Asteroid',
+    modelPath: '/src/assets/bennu/Bennu.gltf',
+    scale: 20000,
+    cameraDistance: 2500,
+  },
+  'Custom': {
+    name: 'Generic Asteroid',
+    modelPath: '/src/assets/bennu/Bennu.gltf',
+    scale: 20000,
+    cameraDistance: 2500,
+  },
+};
+
 const AsteroidSelectPage = () => {
   const { viewer } = useCesium();
+  const location = useLocation();
+  const impactLocation = location.state?.impactLocation;
+  const [currentAsteroidType, setCurrentAsteroidType] = useState('Bennu');
 
   // Prototype onLaunch function
-  const handleAsteroidLaunch = (params) => {
+  const handleAsteroidLaunch = async (params) => {
     console.log('Launching asteroid with parameters:', params);
+    console.log('Impact location:', impactLocation);
     
     if (!viewer) {
       console.error('Cesium viewer not initialized');
@@ -17,19 +50,44 @@ const AsteroidSelectPage = () => {
     }
 
     // Extract parameters
-    const { diameter, density, velocityKm, entryAngle, azimuth, aimPoint } = params;
+    const { diameter, density, velocityKm, entryAngle, azimuth, aimPoint, materialType } = params;
     
-    // Calculate mass from diameter and density
-    const radius = diameter / 2;
-    const volume = (4/3) * Math.PI * Math.pow(radius, 3);
-    const mass = volume * density;
-    
-    // Log calculated values
-    console.log('Calculated mass:', mass.toFixed(2), 'kg');
-    console.log('Velocity:', velocityKm, 'km/s');
-    console.log('Entry angle:', entryAngle, '° (horizontal)');
-    console.log('Azimuth:', azimuth, '°');
-    console.log('Aim point:', aimPoint);
+    // Format data according to API specification
+    const requestData = {
+      inputs: {
+        diameter_m: diameter,
+        density_kg_m3: density,
+        material_type: materialType,
+        entry_speed_m_s: velocityKm * 1000, // Convert km/s to m/s
+        entry_angle_deg: entryAngle,
+        azimuth_deg: azimuth,
+        aim_point: {
+          lat: aimPoint?.lat || impactLocation?.latitude || 0,
+          lon: aimPoint?.lon || impactLocation?.longitude || 0
+        }
+      }
+    };
+
+    console.log('Sending data to API:', requestData);
+
+    try {
+      const response = await fetch('/api/simulations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('API response:', result);
+      return result;
+    } catch (error) {
+      console.error('Error sending data to API:', error);
+      throw error;
+    }
   };
 
   useEffect(() => {
@@ -47,7 +105,10 @@ const AsteroidSelectPage = () => {
     // Remove any existing entities
     viewer.entities.removeAll();
 
-    // Load the Bennu asteroid model
+    // Get the model configuration for the current asteroid type
+    const modelConfig = ASTEROID_MODELS[currentAsteroidType] || ASTEROID_MODELS['Custom'];
+
+    // Load the asteroid model
     const position = Cesium.Cartesian3.fromDegrees(0, 0, 0);
     
     const heading = Cesium.Math.toRadians(0);
@@ -57,13 +118,13 @@ const AsteroidSelectPage = () => {
     const orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
 
     const entity = viewer.entities.add({
-      name: 'Bennu Asteroid',
+      name: modelConfig.name,
       position: position,
       orientation: orientation,
       model: {
-        uri: '/src/assets/bennu/Bennu.gltf',
+        uri: modelConfig.modelPath,
         minimumPixelSize: 128,
-        maximumScale: 20000,
+        maximumScale: modelConfig.scale,
       },
     });
 
@@ -80,7 +141,7 @@ const AsteroidSelectPage = () => {
       const modelPosition = entity.position.getValue(Cesium.JulianDate.now());
       viewer.camera.lookAt(
         modelPosition,
-        new Cesium.HeadingPitchRange(0, -Cesium.Math.PI_OVER_FOUR, 2500)
+        new Cesium.HeadingPitchRange(0, -Cesium.Math.PI_OVER_FOUR, modelConfig.cameraDistance)
       );
       
       // Set the rotation center to the model's position
@@ -88,7 +149,7 @@ const AsteroidSelectPage = () => {
         Cesium.CameraEventType.LEFT_DRAG
       ];
     });
-  }, [viewer]);
+  }, [viewer, currentAsteroidType]);
 
   /*return (
     <InfoCard
@@ -116,7 +177,11 @@ const AsteroidSelectPage = () => {
   );*/
 
   return (
-    <AsteroidParameterPanel onLaunch={handleAsteroidLaunch} />
+    <AsteroidParameterPanel 
+      onLaunch={handleAsteroidLaunch} 
+      impactLocation={impactLocation}
+      onAsteroidTypeChange={setCurrentAsteroidType}
+    />
   )
 };
 
