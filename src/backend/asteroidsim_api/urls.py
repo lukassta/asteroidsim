@@ -1,6 +1,7 @@
-from asteroid import views
 from django.contrib import admin
 from django.urls import path
+
+from asteroid import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -11,12 +12,12 @@ urlpatterns = [
     ),
     path(
         "api/simulations/",
-        views.SimulationsListView.as_view(),
-        name="simulations_list_view",
+        views.SimulationsComputeView.as_view(),
+        name="simulations_compute_view",
     ),
     path(
         "api/simulations/<int:simulation_id>/",
-        views.SimulationDetailsView.as_view(),
-        name="simulation_details_view",
+        views.SimulationsFetchView.as_view(),
+        name="simulations_fetch_view",
     ),
 ]
