@@ -58,7 +58,7 @@ const AsteroidSelectPage = () => {
         diameter_m: diameter,
         density_kg_m3: density,
         material_type: materialType,
-        entry_speed_m_s: velocityKm * 1000, // Convert km/s to m/s
+        entry_velocity_m_s: velocityKm * 1000, // Convert km/s to m/s
         entry_angle_deg: entryAngle,
         azimuth_deg: azimuth,
         lat: lat || impactLocation?.latitude || 0,
