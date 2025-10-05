@@ -62,19 +62,21 @@ const AsteroidControlPanel = ({ onLaunch, impactLocation, onAsteroidTypeChange, 
 
     const isCustom = selectedAsteroid === 'Custom'
 
-    const handleLaunch = () => {
-        const res = onLaunch({
-            diameter,
-            density,
-            velocityKm: velocity / 1000.0,
-            entryAngle,
-            azimuth,
-            lat,
-            lon,
-            materialType: structure,
-        })
-
-        console.log(res)
+    const handleLaunch = async () => {
+        try {
+            await onLaunch({
+                diameter,
+                density,
+                velocityKm: velocity / 1000.0,
+                entryAngle,
+                azimuth,
+                lat,
+                lon,
+                materialType: structure,
+            })
+        } catch (error) {
+            console.error('Failed to launch asteroid:', error)
+        }
     }
 
     return (

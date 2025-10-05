@@ -45,11 +45,6 @@ const AsteroidSelectPage = () => {
     console.log('Launching asteroid with parameters:', params);
     console.log('Impact location:', impactLocation);
 
-    if (!viewer) {
-      console.error('Cesium viewer not initialized');
-      return;
-    }
-
     // Extract parameters
     const { diameter, density, velocityKm, entryAngle, azimuth, lat, lon, materialType } = params;
 
@@ -82,7 +77,7 @@ const AsteroidSelectPage = () => {
 
       const data = await response.json();
       console.log('API response:', data);
-      
+
       // Redirect to ImpactEffectPage with the response data
       navigate('/impact-effects', {
         state: {
