@@ -8,16 +8,25 @@ import { useCesium } from "../context/CesiumContext";
 import CesiumViewer from "../CesiumViewer";
 
 export default function ImpactEffectPage() {
-    const [id, setId] = useState("");
-    const [map, setMap] = useState(null);
-    const [panel, setPanel] = useState(null);
-    const [meta, setMeta] = useState(null);
-    const { viewer, entitiesRef } = useCesium();
     const location = useLocation();
     const simulationData = location.state?.simulationData;
+    
+    // Initialize state with simulationData if available
+    const [id, setId] = useState(simulationData?.id || "");
+    const [map, setMap] = useState(simulationData?.map || null);
+    const [panel, setPanel] = useState(simulationData?.panel || null);
+    const [meta, setMeta] = useState(simulationData?.meta || null);
+    const { viewer, entitiesRef } = useCesium();
 
     // Reset Cesium viewer to globe view when component mounts
     useEffect(() => {
+        if (!viewer) {
+            console.log("Viewer not ready yet for globe reset");
+            return;
+        }
+
+        console.log("Resetting Cesium viewer to globe view");
+
         // Show the globe
         viewer.scene.globe.show = true;
 
@@ -56,27 +65,30 @@ export default function ImpactEffectPage() {
     }, [viewer]);
 
     useEffect(() => {
-        // If we have data from navigation state (POST request), use it immediately
-        if (simulationData) {
-            console.log("Using simulation data from navigation:", simulationData);
-            setId(simulationData.id);
-            setMap(simulationData.map);
-            setPanel(simulationData.panel);
-            setMeta(simulationData.meta);
-        } else {
-            // Otherwise, fetch from the GET endpoint (fallback for direct navigation)
-            console.log("No simulation data in navigation state, fetching from API...");
-            fetchSimulation().then((data) => {
-                console.log("Fetched simulation data:", data);
-                setId(data.id);
-                setMap(data.map);
-                setPanel(data.panel);
-                setMeta(data.meta);
-            }).catch((error) => {
-                console.error("Error fetching simulation data:", error);
-            });
+        // If we don't have data yet (not initialized in state), fetch it
+        if (!map && !panel && !meta) {
+            if (simulationData) {
+                // Use data from navigation state
+                console.log("Using simulation data from navigation:", simulationData);
+                setId(simulationData.id);
+                setMap(simulationData.map);
+                setPanel(simulationData.panel);
+                setMeta(simulationData.meta);
+            } else {
+                // Otherwise, fetch from the GET endpoint (fallback for direct navigation)
+                console.log("No simulation data in navigation state, fetching from API...");
+                fetchSimulation().then((data) => {
+                    console.log("Fetched simulation data:", data);
+                    setId(data.id);
+                    setMap(data.map);
+                    setPanel(data.panel);
+                    setMeta(data.meta);
+                }).catch((error) => {
+                    console.error("Error fetching simulation data:", error);
+                });
+            }
         }
-    }, [simulationData]);
+    }, [simulationData, map, panel, meta]);
 
     // Render crater rings on the map
     useEffect(() => {
