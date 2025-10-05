@@ -117,6 +117,7 @@ class SimulationsComputeView(APIView):
         kpa_10_casulties = kpa_10_population * KPA_FATALITY_RATE.get("kpa_10", 0)
         kpa_3_casulties = kpa_3_population * KPA_FATALITY_RATE.get("kpa_3", 0)
 
+        print(kpa_70_population,  kpa_70_casulties)
         total_casulties = (
             crater_casulties
             + kpa_70_casulties
@@ -155,7 +156,7 @@ class SimulationsComputeView(APIView):
                         "radius_m": kpa_70_radius,
                         "arrival_time_s": 5.9,
                         "delta_to_next_s": 2.4,
-                        "population": kpa_70_radius,
+                        "population": kpa_70_population,
                         "estimated_deaths": kpa_70_casulties,
                         "blurb": "Severe structural damage (reinforced buildings fail).",
                     },
@@ -164,7 +165,7 @@ class SimulationsComputeView(APIView):
                         "radius_m": kpa_50_radius,
                         "arrival_time_s": 8.3,
                         "delta_to_next_s": 2.7,
-                        "population": kpa_50_radius,
+                        "population": kpa_50_population,
                         "estimated_deaths": kpa_50_casulties,
                         "blurb": "Heavy damage; most buildings uninhabitable.",
                     },
@@ -173,7 +174,7 @@ class SimulationsComputeView(APIView):
                         "radius_m": kpa_35_radius,
                         "arrival_time_s": 11.0,
                         "delta_to_next_s": 6.0,
-                        "population": kpa_35_radius,
+                        "population": kpa_35_population,
                         "estimated_deaths": kpa_35_casulties,
                         "blurb": "Moderate damage; walls collapse, serious injuries.",
                     },
@@ -182,7 +183,7 @@ class SimulationsComputeView(APIView):
                         "radius_m": kpa_20_radius,
                         "arrival_time_s": 17.0,
                         "delta_to_next_s": 9.0,
-                        "population": kpa_20_radius,
+                        "population": kpa_20_population,
                         "estimated_deaths": kpa_20_casulties,
                         "blurb": "Light damage; roofs/doors blown in.",
                     },
@@ -191,7 +192,7 @@ class SimulationsComputeView(APIView):
                         "radius_m": kpa_10_radius,
                         "arrival_time_s": 26.0,
                         "delta_to_next_s": 28.0,
-                        "population": kpa_10_radius,
+                        "population": kpa_10_population,
                         "estimated_deaths": kpa_10_casulties,
                         "blurb": "Minor damage; most windows shatter.",
                     },
