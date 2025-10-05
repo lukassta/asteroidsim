@@ -1,5 +1,7 @@
 from typing import Any, Dict
 import math
+import json
+import hashlib
 
 def normalize_params(params: Dict[str, Any]) -> Dict[str, Any]:
     """Return a new dict with defaults applied and fields rounded.
@@ -58,14 +60,41 @@ def normalize_params(params: Dict[str, Any]) -> Dict[str, Any]:
     return normalized_params
 
 def compute_simulation_id(normalized_params: Dict[str, Any]) -> str:
-    pass
+    """
+    Compute a stable SHA-256 hash ID from normalized simulation parameters.
+
+    Parameters:
+        normalized_params (dict[str, Any]): Dictionary of normalized parameters
+
+    Returns:
+        str: simulation_id
+    """
+    # Ensure deterministic ordering and consistent formatting
+    serialized: str = json.dumps(normalized_params, sort_keys=True, separators=(",", ":"))
+
+    # Encode to bytes for hashing
+    encoded: bytes = serialized.encode("utf-8")
+
+    # Compute SHA-256 digest
+    simulation_id: str = hashlib.sha256(encoded).hexdigest()
+
+    # Return with clear prefix (so ID type is explicit)
+    return simulation_id
+    
 
 def as_finite_positive_float(name: str, value: Any) -> float:
-    """Coerce to float, ensure finite and > 0."""
-    try:
-        x = float(value)
-    except (TypeError, ValueError):
-        raise ValueError(f"{name} must be a number.")
+    """Require a real number (int/float), finite, and > 0.
+
+    - strings are NOT accepted.
+    - bool is NOT accepted
+    - raises TypeError for non-numeric types; ValueError for non-finite/≤0.
+    """
+    # allow only int/float (but reject bool explicitly, since it's a subclass of int)
+    # and thus True would pass the isinstance check -> get coerced to 1.0 and get returned as a valid value
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError(f"{name} must be a number.")
+
+    x = float(value)  # safe now
     if not math.isfinite(x):
         raise ValueError(f"{name} must be finite (no NaN/inf).")
     if x <= 0:

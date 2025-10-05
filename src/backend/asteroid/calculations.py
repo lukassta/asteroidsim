@@ -1,15 +1,15 @@
 import os
 
-import geopandas as gpd
 import numpy as np
 import rioxarray
 from pyproj import Transformer
-from shapely.geometry import Point
-import math
-import numbers
 from .constants import *
 from .utils import as_finite_positive_float
 
+# @lukas
+# --------- maybe call this file metrics.py and keep it strictly for functions that compute metrics?
+# --------- also, we should probably have similar styled functions, maybe im doing too much with the type hints
+# and as_finite_positive_float(), but i feel like an app like this should have the most robust calculation functions possible
 def get_population_in_area(latitude, longtitude, radius):
     """
     Inputs: impact longtitude, impact latitude, impact radius (m)
@@ -71,41 +71,6 @@ def get_population_in_area(latitude, longtitude, radius):
 
     return population
 
-def calculate_volume(diameter_m: float) -> float:
-    """Calculate the volume of a sphere given its diameter.
-
-    Parameters:
-        diameter_m (float): Sphere diameter in meters (m).
-
-    Returns:
-        float: Volume in cubic meters (m^3).
-
-    Raises:
-        ValueError: If diameter is not positive.
-    """
-    if diameter_m <= 0:
-        raise ValueError("diameter must be a positive number.")
-    
-    radius_m = diameter_m / 2.0
-    volume = (4.0 / 3.0) * math.pi * (radius_m ** 3)
-    return volume
-
-def calculate_mass(volume_m3: float, density_kg_m3: float) -> float:
-    """Calculate mass from volume and density.
-
-    Parameters:
-        volume_m3 (float): volume in cubic meters (m^3).
-        density_kg_m3 (float): density in kilograms per cubic meter (kg/m^3).
-
-    Returns:
-        float: mass in kilograms (kg).
-    """
-    if volume_m3 <= 0 or density_kg_m3 <= 0:
-        raise ValueError("Volume and density must be positive numbers.")
-
-    mass = volume_m3 * density_kg_m3
-    return mass
-
 def calculate_impact_energy(mass_kg: float, velocity_m_s: float) -> float:
     """Calculate kinetic energy released by an impactor in megatons of TNT.
 
@@ -159,3 +124,18 @@ def calculate_crater_diameter_final(D_tc_m: float) -> float:
 
     crater_diameter_final_m = D_tc_m_validated * SIMPLE_TRANSIENT_TO_FINAL_FACTOR
     return crater_diameter_final_m
+
+def calculate_crater_depth_final(D_f_m: float) -> float:
+    """
+    Calculates the depth of a simple crater in its final state.
+
+    Params:
+        D_f_m (float): final crater diameter in meters (m)
+
+    Returns:
+        float: depth of a simple crater in meters (m)
+    """
+    D_f_m_validated = as_finite_positive_float("D_f_m", D_f_m)
+
+    crater_depth_final_m = D_f_m_validated * SIMPLE_CRATER_DEPTH_FACTOR
+    return crater_depth_final_m
