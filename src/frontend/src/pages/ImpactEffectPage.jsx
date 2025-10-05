@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import * as Cesium from "cesium";
 import PanelCard from "../components/PanelCard";
 import MetaCard from "../components/MetaCard";
@@ -12,15 +13,26 @@ export default function ImpactEffectPage() {
     const [panel, setPanel] = useState(null);
     const [meta, setMeta] = useState(null);
     const { viewer, entitiesRef } = useCesium();
+    const location = useLocation();
+    const simulationData = location.state?.simulationData;
 
     useEffect(() => {
-        fetchSimulation().then((data) => {
-            setId(data.id);
-            setMap(data.map);
-            setPanel(data.panel);
-            setMeta(data.meta);
-        });
-    }, []);
+        // If we have data from navigation state (POST request), use it
+        if (simulationData) {
+            setId(simulationData.id);
+            setMap(simulationData.map);
+            setPanel(simulationData.panel);
+            setMeta(simulationData.meta);
+        } else {
+            // Otherwise, fetch from the GET endpoint (fallback for direct navigation)
+            fetchSimulation().then((data) => {
+                setId(data.id);
+                setMap(data.map);
+                setPanel(data.panel);
+                setMeta(data.meta);
+            });
+        }
+    }, [simulationData]);
 
     // Render crater rings on the map
     useEffect(() => {

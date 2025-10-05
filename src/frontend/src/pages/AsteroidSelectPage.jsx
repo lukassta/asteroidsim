@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useCesium } from '../context/CesiumContext';
 import * as Cesium from 'cesium';
 import InfoCard from '../components/InfoCard';
@@ -36,6 +36,7 @@ const ASTEROID_MODELS = {
 const AsteroidSelectPage = () => {
   const { viewer } = useCesium();
   const location = useLocation();
+  const navigate = useNavigate();
   const impactLocation = location.state?.impactLocation;
   const [currentAsteroidType, setCurrentAsteroidType] = useState('Bennu');
 
@@ -79,9 +80,15 @@ const AsteroidSelectPage = () => {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
-      const result = await response.json();
-      console.log('API response:', result);
-      return result;
+      const data = await response.json();
+      console.log('API response:', data);
+      
+      // Redirect to ImpactEffectPage with the response data
+      navigate('/impact-effects', {
+        state: {
+          simulationData: data
+        }
+      });
     } catch (error) {
       console.error('Error sending data to API:', error);
       throw error;
