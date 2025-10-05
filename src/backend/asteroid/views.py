@@ -6,10 +6,14 @@ from rest_framework.views import APIView
 from asteroid.models import Asteroid
 from asteroid.serializers import BriefAsteroidSerializer
 
-from .calculations import get_population_in_area, calculate_impact_energy, calculate_crater_diameter_transient, calculate_crater_diameter_final, calculate_crater_depth_final
+from .calculations import (calculate_crater_depth_final,
+                           calculate_crater_diameter_final,
+                           calculate_crater_diameter_transient,
+                           calculate_impact_energy, calculate_rings,
+                           get_population_in_area)
 from .constants import KPA_FATALITY_RATE
-from .utils import compute_simulation_id, normalize_params
 from .physics_helpers import calculate_mass, calculate_volume
+from .utils import compute_simulation_id, normalize_params
 
 
 # are we still doing the character thing to need this? @lukas
@@ -44,21 +48,24 @@ class SimulationsComputeView(APIView):
         lon = normalized_params.get("lon", 0)
         velocity = normalized_params.get("entry_velocity_m_s", 0)
 
-        asteroid_volume = calculate_volume(asteroid_diameter )
+        asteroid_volume = calculate_volume(asteroid_diameter)
         asteroid_mass = calculate_mass(asteroid_volume, asteroid_density)
 
         impact_energy = calculate_impact_energy(asteroid_mass, velocity)
-        crater_diameter_trans = calculate_crater_diameter_transient(impact_energy, asteroid_composition)
+        crater_diameter_trans = calculate_crater_diameter_transient(
+            impact_energy, asteroid_composition
+        )
         crater_diameter = calculate_crater_diameter_final(crater_diameter_trans)
         crater_depth = calculate_crater_depth_final(crater_diameter)
 
-        # TODO
-        kpa_70_radius = 0
-        kpa_50_radius = 0
-        kpa_35_radius = 0
-        kpa_20_radius = 0
-        kpa_10_radius = 0
-        kpa_3_radius = 0
+        rings = calculate_rings(impact_energy, asteroid_diameter, asteroid_composition)
+
+        kpa_70_radius = rings.get("kpa_70", 0)
+        kpa_50_radius = rings.get("kpa_50", 0)
+        kpa_35_radius = rings.get("kpa_35", 0)
+        kpa_20_radius = rings.get("kpa_20", 0)
+        kpa_10_radius = rings.get("kpa_10", 0)
+        kpa_3_radius = rings.get("kpa_3", 0)
 
         crater_population = get_population_in_area(lat, lon, crater_diameter / 2)
         kpa_70_population = (
@@ -215,14 +222,7 @@ class SimulationsComputeView(APIView):
             },
         }
 
-        # TODO
-        # 1. get impact coordinates lat lon
-        # 2. compute rings based on the 5 tresholds
-        # 3. compute rings delta_to_next_s and arrival_time
-        # 4. compute h1 h2 h3
-
         return Response({"data": return_data}, status=status.HTTP_200_OK)
-
 
 
 class SimulationsFetchView(APIView):
