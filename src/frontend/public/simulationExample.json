@@ -1,0 +1,100 @@
+{
+  "id": "sha256:abcdef123456",
+  "map": {
+    "center": {"lat": 40.1200, "lon": -119.6200},
+    "crater_transient_diameter_m": 1800,
+    "crater_final_diameter_m": 2200,
+    "rings": [
+      {"id": "kpa70", "threshold_kpa": 70, "radius_m": 2500},
+      {"id": "kpa50", "threshold_kpa": 50, "radius_m": 4200},
+      {"id": "kpa35", "threshold_kpa": 35, "radius_m": 6000},
+      {"id": "kpa20", "threshold_kpa": 20, "radius_m": 10000},
+      {"id": "kpa10", "threshold_kpa": 10, "radius_m": 17000},
+      {"id": "kpa3", "threshold_kpa": 3, "radius_m": 36000}
+    ]
+  },
+
+  "panel": {
+    "energy_released_megatons": 120.0,
+    "crater_final": {
+      "formed": true,
+      "diameter_m": 2200,
+      "depth_m": 300
+    },
+    "rings": [
+      {
+        "threshold_kpa": 70,
+        "radius_m": 2500,
+        "arrival_time_s": 5.9,
+        "delta_to_next_s": 2.4,
+        "population": 1800,
+        "estimated_deaths": 1500,
+        "blurb": "Severe structural damage (reinforced buildings fail)."
+      },
+      {
+        "threshold_kpa": 50,
+        "radius_m": 4200,
+        "arrival_time_s": 8.3,
+        "delta_to_next_s": 2.7,
+        "population": 4300,
+        "estimated_deaths": 2100,
+        "blurb": "Heavy damage; most buildings uninhabitable."
+      },
+      {
+        "threshold_kpa": 35,
+        "radius_m": 6000,
+        "arrival_time_s": 11.0,
+        "delta_to_next_s": 6.0,
+        "population": 9000,
+        "estimated_deaths": 1800,
+        "blurb": "Moderate damage; walls collapse, serious injuries."
+      },
+      {
+        "threshold_kpa": 20,
+        "radius_m": 10000,
+        "arrival_time_s": 17.0,
+        "delta_to_next_s": 9.0,
+        "population": 20000,
+        "estimated_deaths": 1100,
+        "blurb": "Light damage; roofs/doors blown in."
+      },
+      {
+        "threshold_kpa": 10,
+        "radius_m": 17000,
+        "arrival_time_s": 26.0,
+        "delta_to_next_s": 28.0,
+        "population": 34000,
+        "estimated_deaths": 700,
+        "blurb": "Minor damage; most windows shatter."
+      },
+      {
+        "threshold_kpa": 3,
+        "radius_m": 36000,
+        "arrival_time_s": 54.0,
+        "delta_to_next_s": null,
+        "population": 70000,
+        "estimated_deaths": 280,
+        "blurb": "Pressure wave felt; light glass damage."
+      }
+    ],
+    "entry": {
+      "h1_breakup_begin_m": null,
+      "h2_peak_energy_m": null,
+      "h3_airburst_or_surface_m": 0,
+      "terminal_type": "impact"
+    },
+    "totals": {
+      "total_estimated_deaths": 7280
+    }
+  },
+
+  "meta": {
+    "units": "SI; lat/lon degrees WGS-84",
+    "notes": [
+      "Impact case (surface crater formed).",
+      "Arrival times measured from impact time.",
+      "Population and deaths are per annulus between rings."
+    ],
+    "version": "1"
+  }
+}
