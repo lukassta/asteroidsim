@@ -194,10 +194,10 @@ def calculate_asteroid_fall_trajecotry_coordinates(
         z_m = h + EARTH_RADIUS_M
 
         # Weird way to store, but cezium wants this
-        asteroid_coordinates.append(time_moment_s)
-        asteroid_coordinates.append(x_m)
-        asteroid_coordinates.append(y_m)
-        asteroid_coordinates.append(z_m)
+        asteroid_coordinates.append(round(time_moment_s))
+        asteroid_coordinates.append(round(x_m))
+        asteroid_coordinates.append(round(y_m))
+        asteroid_coordinates.append(round(z_m))
 
     return asteroid_coordinates
 
