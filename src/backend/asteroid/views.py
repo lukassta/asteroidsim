@@ -1,20 +1,24 @@
+from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from asteroid.models import Asteroid
 from asteroid.serializers import BriefAsteroidSerializer
 
-from .calculations import (calculate_crater_depth_final,
-                           calculate_crater_diameter_final,
-                           calculate_crater_diameter_transient,
-                           calculate_impact_energy, calculate_rings,
-                           get_population_in_area,
-                           caclulate_asteroid_impact_mass)
+from .calculations import (
+    calculate_crater_depth_final,
+    calculate_crater_diameter_final,
+    calculate_crater_diameter_transient,
+    calculate_impact_energy, calculate_rings,
+    get_population_in_area,
+    caclulate_asteroid_impact_mass)
 from .constants import KPA_FATALITY_RATE
 from .physics_helpers import calculate_mass, calculate_volume
 from .utils import compute_simulation_id, normalize_params
+from typing import Dict, Any
+from .api_calls import call_sbdb_lookup
+
 
 
 # are we still doing the character thing to need this? @lukas
@@ -231,3 +235,14 @@ class SimulationsComputeView(APIView):
 class SimulationsFetchView(APIView):
     def get(self, request, simulation_id):
         pass
+
+class ResolveSpkIdByNameView(APIView):
+    def get(self, request):
+        name = (request.query_params.get("name") or "").strip()
+        if not name:
+            return JsonResponse(
+                {"detail": "Query parameter 'name' is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        payload = call_sbdb_lookup(name)
