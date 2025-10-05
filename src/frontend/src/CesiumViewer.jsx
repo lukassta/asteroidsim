@@ -18,20 +18,29 @@ function CesiumViewer() {
         viewerRef.current = new Cesium.Viewer(cesiumContainer.current, {
             terrain: Cesium.Terrain.fromWorldTerrain(),
             resolutionScale: 1.0,
-            scene3DOnly: true,
+            scene3DOnly: false,
             baseLayer: Cesium.ImageryLayer.fromProviderAsync(
-                Cesium.IonImageryProvider.fromAssetId(
-                    3830183
-                )
+                Cesium.IonImageryProvider.fromAssetId(2)
             ),
             baseLayerPicker: false,
             geocoder: false,
-            homeButton: false,
+            homeButton: true,
             sceneModePicker: false,
             navigationHelpButton: false,
-            animation: false,
-            timeline: false,
+            animation: true,
+            timeline: true,
+            fullscreenButton: false,
+            infoBox: true,
+            selectionIndicator: true,
         })
+        
+        // Hide animation and timeline by default - pages can show them if needed
+        if (viewerRef.current.animation) {
+            viewerRef.current.animation.container.style.visibility = 'hidden'
+        }
+        if (viewerRef.current.timeline) {
+            viewerRef.current.timeline.container.style.visibility = 'hidden'
+        }
 
 
 

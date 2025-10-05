@@ -40,9 +40,7 @@ const asteroidModels = [
 ]
 
 const AsteroidSimulationPage = () => {
-    const { setViewer } = useCesium()
-    const cesiumContainer = useRef(null)
-    const viewerRef = useRef(null)
+    const { viewer } = useCesium()
     const [isPlaying, setIsPlaying] = useState(false)
     const [czmlData, setCzmlData] = useState(null)
     const [selectedAsteroid, setSelectedAsteroid] = useState('bennu')
@@ -50,6 +48,62 @@ const AsteroidSimulationPage = () => {
     const [asteroidSize, setAsteroidSize] = useState(500) // Size in meters
     const [cartesianInput, setCartesianInput] = useState('[0, 0, 0, 100000]') // Cartographic degrees input (time, lon, lat, alt)
     const fileInputRef = useRef(null)
+
+    // Configure viewer when component mounts
+    useEffect(() => {
+        if (!viewer) return
+
+        // Show the globe
+        viewer.scene.globe.show = true
+        
+        // Show the atmosphere (blue sky)
+        viewer.scene.skyAtmosphere.show = true
+
+        // Show the skybox
+        viewer.scene.skyBox.show = true
+
+        // Remove any existing entities
+        viewer.entities.removeAll()
+
+        // Release the camera from lookAt mode
+        viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY)
+
+        // Enable necessary viewer features for asteroid simulation
+        viewer.scene.globe.enableLighting = true
+        viewer.scene.globe.atmosphereLightIntensity = 20.0
+
+        // Show animation and timeline controls
+        if (viewer.animation) {
+            viewer.animation.container.style.visibility = 'visible'
+        }
+        if (viewer.timeline) {
+            viewer.timeline.container.style.visibility = 'visible'
+        }
+
+        // Set camera view for Earth observation
+        viewer.camera.setView({
+            destination: Cesium.Cartesian3.fromDegrees(0, 0, 25000000),
+            orientation: {
+                heading: 0.0,
+                pitch: -Cesium.Math.PI_OVER_TWO,
+                roll: 0.0
+            }
+        })
+
+        // Cleanup on unmount - hide controls
+        return () => {
+            if (viewer && !viewer.isDestroyed()) {
+                if (viewer.animation) {
+                    viewer.animation.container.style.visibility = 'hidden'
+                }
+                if (viewer.timeline) {
+                    viewer.timeline.container.style.visibility = 'hidden'
+                }
+                // Remove all data sources
+                viewer.dataSources.removeAll()
+            }
+        }
+    }, [viewer])
 
     // Calculate scale factor based on asteroid size in meters
     const calculateScale = (sizeInMeters, modelValue) => {
@@ -67,83 +121,21 @@ const AsteroidSimulationPage = () => {
         return scale
     }
 
-    // Initialize Cesium Viewer
-    useEffect(() => {
-        if (!cesiumContainer.current || viewerRef.current) return
 
-        // Set Cesium Ion access token
-        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmYmQwNDcxYi1hNzg0LTQ5MDMtOGU5OC1iMjAzMTE1NDBiMDkiLCJpZCI6MzQ2OTAzLCJpYXQiOjE3NTk1MDMzMDl9.evML2LxnRfcQ_WY8dGa8YzObvbt25oz6GfXdxGaG_eY'
-
-        // Create viewer
-        viewerRef.current = new Cesium.Viewer(cesiumContainer.current, {
-            terrain: Cesium.Terrain.fromWorldTerrain(),
-            resolutionScale: 1.0,
-            scene3DOnly: false,
-            baseLayer: Cesium.ImageryLayer.fromProviderAsync(
-                Cesium.IonImageryProvider.fromAssetId(2)
-            ),
-            baseLayerPicker: false,
-            geocoder: false,
-            homeButton: true,
-            sceneModePicker: false,
-            navigationHelpButton: false,
-            animation: true,
-            timeline: true,
-            fullscreenButton: false,
-            infoBox: true,
-            selectionIndicator: true,
-        })
-
-        // Enable lighting
-        viewerRef.current.scene.globe.enableLighting = true
-        viewerRef.current.scene.globe.atmosphereLightIntensity = 20.0
-
-        // Set initial camera view - view Earth from space
-        viewerRef.current.camera.setView({
-            destination: Cesium.Cartesian3.fromDegrees(0, 0, 25000000),
-            orientation: {
-                heading: 0.0,
-                pitch: -Cesium.Math.PI_OVER_TWO,
-                roll: 0.0
-            }
-        })
-
-        // Make viewer available through context
-        setViewer(viewerRef.current)
-
-        // Handle window resize
-        const handleResize = () => {
-            if (viewerRef.current) {
-                viewerRef.current.resize()
-            }
-        }
-
-        window.addEventListener('resize', handleResize)
-
-        // Cleanup
-        return () => {
-            window.removeEventListener('resize', handleResize)
-            if (viewerRef.current && !viewerRef.current.isDestroyed()) {
-                viewerRef.current.destroy()
-                viewerRef.current = null
-                setViewer(null)
-            }
-        }
-    }, [setViewer])
 
     // Load CZML data
     const loadCzmlData = async (czmlJson) => {
-        if (!viewerRef.current) return
+        if (!viewer) return
 
         try {
             // Remove existing CZML data source if any
             if (czmlSource) {
-                viewerRef.current.dataSources.remove(czmlSource)
+                viewer.dataSources.remove(czmlSource)
             }
 
             // Load new CZML data
             const dataSource = await Cesium.CzmlDataSource.load(czmlJson)
-            await viewerRef.current.dataSources.add(dataSource)
+            await viewer.dataSources.add(dataSource)
             setCzmlSource(dataSource)
 
             // Find the asteroid entity and update its model
@@ -174,12 +166,12 @@ const AsteroidSimulationPage = () => {
                     })
 
                     // Track the asteroid
-                    viewerRef.current.trackedEntity = entity
+                    viewer.trackedEntity = entity
                 }
             }
 
             // Start animation
-            viewerRef.current.clock.shouldAnimate = true
+            viewer.clock.shouldAnimate = true
             setIsPlaying(true)
 
             console.log('CZML data loaded successfully')
@@ -293,24 +285,24 @@ const AsteroidSimulationPage = () => {
 
     // Playback controls
     const togglePlayback = () => {
-        if (!viewerRef.current) return
+        if (!viewer) return
         
-        const shouldAnimate = !viewerRef.current.clock.shouldAnimate
-        viewerRef.current.clock.shouldAnimate = shouldAnimate
+        const shouldAnimate = !viewer.clock.shouldAnimate
+        viewer.clock.shouldAnimate = shouldAnimate
         setIsPlaying(shouldAnimate)
     }
 
     const resetSimulation = () => {
-        if (!viewerRef.current || !czmlData) return
+        if (!viewer || !czmlData) return
         
-        viewerRef.current.clock.currentTime = viewerRef.current.clock.startTime.clone()
-        viewerRef.current.clock.shouldAnimate = false
+        viewer.clock.currentTime = viewer.clock.startTime.clone()
+        viewer.clock.shouldAnimate = false
         setIsPlaying(false)
     }
 
     // Update asteroid model when selection or size changes
     useEffect(() => {
-        if (czmlSource && viewerRef.current) {
+        if (czmlSource && viewer) {
             const entities = czmlSource.entities.values
             for (let i = 0; i < entities.length; i++) {
                 const entity = entities[i]
@@ -330,18 +322,12 @@ const AsteroidSimulationPage = () => {
                 }
             }
         }
-    }, [selectedAsteroid, asteroidSize, czmlSource])
+    }, [selectedAsteroid, asteroidSize, czmlSource, viewer])
 
     return (
-        <div className="relative w-full h-screen bg-black">
-            {/* Cesium Container */}
-            <div
-                ref={cesiumContainer}
-                className="absolute top-0 left-0 w-full h-full"
-            />
-
+        <div className="relative w-full h-screen pointer-events-none">
             {/* Control Panel */}
-            <Card className="absolute top-18 left-4 w-80 bg-slate-900/95 backdrop-blur-sm border-slate-700 text-slate-100 z-10">
+            <Card className="absolute top-20 left-4 w-80 bg-slate-900/95 backdrop-blur-sm border-slate-700 text-slate-100 z-10 pointer-events-auto">
                 <CardHeader>
                     <CardTitle>Asteroid Trajectory Simulator</CardTitle>
                     <CardDescription className="text-slate-400">
