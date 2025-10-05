@@ -4,7 +4,7 @@ from typing import Any, List, Tuple
 
 import numpy as np
 import rioxarray
-from pyproj import Geod, Transformer
+from pyproj import Transformer, Proj, transform
 
 from .constants import *
 from .utils import as_finite_positive_float
@@ -175,8 +175,10 @@ def calculate_asteroid_fall_trajecotry_coordinates(
     fall_time_s: float,
 ) -> float:
     asteroid_coordinates = []
+    entry_angle_deg = max(entry_angle_deg, 0.1)
+    entry_angle_deg = min(entry_angle_deg, 89.9)
 
-    for time_moment_s in np.arange(0, fall_time_s, 1):
+    for time_moment_s in np.arange(0, fall_time_s + 1, 1):
         inverted_time_moment_s = fall_time_s - time_moment_s
 
         h = (
@@ -185,18 +187,22 @@ def calculate_asteroid_fall_trajecotry_coordinates(
         )
 
         x_m = (
-            h * math.sin(azimuth_angle_deg) / math.tan(entry_angle_deg) + EARTH_RADIUS_M
+            h * math.sin(azimuth_angle_deg) / math.tan(entry_angle_deg)
         )
         y_m = (
-            h * math.cos(azimuth_angle_deg) / math.tan(entry_angle_deg) + EARTH_RADIUS_M
+            h * math.cos(azimuth_angle_deg) / math.tan(entry_angle_deg)
         )
-        z_m = h + EARTH_RADIUS_M
+
+        utm = Proj(proj="utm", zone=33, ellps="WGS84")
+        wgs84 = Proj(proj="latlon", datum="WGS84")
+
+        lon, lat = transform(utm, wgs84, x_m, y_m)
 
         # Weird way to store, but cezium wants this
         asteroid_coordinates.append(round(time_moment_s))
-        asteroid_coordinates.append(round(x_m))
-        asteroid_coordinates.append(round(y_m))
-        asteroid_coordinates.append(round(z_m))
+        asteroid_coordinates.append(lon)
+        asteroid_coordinates.append(lat)
+        asteroid_coordinates.append(round(h))
 
     return asteroid_coordinates
 
