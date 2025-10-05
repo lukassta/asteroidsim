@@ -1,4 +1,5 @@
 from typing import Dict
+from pyproj import Geod
 # Constant for joules per megatons TNT
 J_PER_MT: float = 4.184e15
 
@@ -26,3 +27,5 @@ BLAST_RADIUS_SF: Dict[str, float] = {
     "crystalline": 3,
     "water": 2
 }
+
+WGS84 = Geod(ellps="WGS84")
