@@ -69,7 +69,7 @@ const AsteroidSelectPage = () => {
     console.log('Sending data to API:', requestData);
 
     try {
-      const response = await fetch('https://asteroidsim.com/api/simulations', {
+      const response = await fetch('https://asteroidsim.com/api/simulations/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData)
