@@ -17,7 +17,7 @@ const ASTEROID_MODELS = {
     name: 'Gaspra Asteroid',
     modelPath: '/src/assets/gaspra/gaspra.gltf',
     scale: 20000,
-    cameraDistance: 15000,
+    cameraDistance: 40000,
   },
   'Ryugu': {
     name: 'Generic Asteroid',
@@ -37,7 +37,7 @@ const AsteroidSelectPage = () => {
   const { viewer } = useCesium();
   const location = useLocation();
   const impactLocation = location.state?.impactLocation;
-  const [currentAsteroidType, setCurrentAsteroidType] = useState('Gaspra');
+  const [currentAsteroidType, setCurrentAsteroidType] = useState('Bennu');
 
   // Prototype onLaunch function
   const handleAsteroidLaunch = async (params) => {

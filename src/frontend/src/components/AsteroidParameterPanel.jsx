@@ -20,8 +20,8 @@ import {
 } from '@/components/ui/select'
 
 const preMadeAsteroids = [
-    { name: 'Gaspra', diameter: 370, density: 3000, velocity: 30000 },
     { name: 'Bennu', diameter: 492, density: 1200, velocity: 28000 },
+    { name: 'Gaspra', diameter: 370, density: 3000, velocity: 30000 },
     { name: 'Ryugu', diameter: 900, density: 1900, velocity: 25000 },
     { name: 'Custom' },
 
@@ -34,11 +34,11 @@ const structureOptions = [
     { label: 'Crystalline rock', value: 'crystalline' }
 ]
 
-const AsteroidControlPanel = ({ onLaunch, impactLocation, onAsteroidTypeChange }) => {
-    const [selectedAsteroid, setSelectedAsteroid] = useState('Apophis')
-    const [diameter, setDiameter] = useState(100)
-    const [density, setDensity] = useState(3000)
-    const [velocity, setVelocity] = useState(20000)
+const AsteroidControlPanel = ({ onLaunch, impactLocation, onAsteroidTypeChange, currentAsteroidType }) => {
+    const [selectedAsteroid, setSelectedAsteroid] = useState(currentAsteroidType || 'Bennu')
+    const [diameter, setDiameter] = useState(preMadeAsteroids.find(a => a.name === (currentAsteroidType || 'Bennu'))?.diameter)
+    const [density, setDensity] = useState(preMadeAsteroids.find(a => a.name === (currentAsteroidType || 'Bennu'))?.density)
+    const [velocity, setVelocity] = useState(preMadeAsteroids.find(a => a.name === (currentAsteroidType || 'Bennu'))?.velocity)
     const [structure, setStructure] = useState('sedimentary')
     const [entryAngle, setEntryAngle] = useState(90)
     const [azimuth, setAzimuth] = useState(0)
