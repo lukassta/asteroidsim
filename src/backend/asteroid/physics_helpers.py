@@ -1,5 +1,7 @@
-from .utils import as_finite_positive_float
 from math import pi
+
+from .utils import as_finite_positive_float
+
 
 def calculate_volume(diameter_m: float) -> float:
     """Calculate the volume of a perfect sphere from its diameter.
@@ -12,8 +14,9 @@ def calculate_volume(diameter_m: float) -> float:
     """
     diameter_m_validated = as_finite_positive_float("diameter_m", diameter_m)
     radius_m = diameter_m_validated / 2.0
-    volume = (4.0 / 3.0) * pi * (radius_m ** 3)
+    volume = (4.0 / 3.0) * pi * (radius_m**3)
     return volume
+
 
 def calculate_mass(volume_m3: float, density_kg_m3: float) -> float:
     """Calculate mass from volume and density.

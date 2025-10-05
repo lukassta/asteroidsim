@@ -1,20 +1,19 @@
 # tests/test_physics_strict.py
 import math
+
 import pytest
 
-from asteroid.physics_helpers import (
-    calculate_volume,
-    calculate_mass,
-)
+from asteroid.physics_helpers import calculate_mass, calculate_volume
 
 # ---------- calculate_volume (strict) ----------
+
 
 @pytest.mark.parametrize(
     "diameter_m, expected_m3",
     [
-        (1.0, (4.0/3.0) * math.pi * (0.5**3)),   # radius=0.5
-        (2.0, (4.0/3.0) * math.pi * (1.0**3)),   # radius=1
-        (1e6, (4.0/3.0) * math.pi * ((5e5)**3)), # large but finite
+        (1.0, (4.0 / 3.0) * math.pi * (0.5**3)),  # radius=0.5
+        (2.0, (4.0 / 3.0) * math.pi * (1.0**3)),  # radius=1
+        (1e6, (4.0 / 3.0) * math.pi * ((5e5) ** 3)),  # large but finite
     ],
 )
 def test_calculate_volume_valid(diameter_m, expected_m3):
@@ -38,7 +37,7 @@ def test_calculate_volume_valid(diameter_m, expected_m3):
         "abc",
         [],
         {},
-        True,   # bools explicitly rejected
+        True,  # bools explicitly rejected
         False,
     ],
 )
@@ -48,6 +47,7 @@ def test_calculate_volume_invalid_strict(bad):
 
 
 # ---------- calculate_mass (strict) ----------
+
 
 @pytest.mark.parametrize(
     "volume_m3, density_kg_m3, expected_kg",
@@ -93,6 +93,7 @@ def test_calculate_mass_invalid_strict(v_bad, rho_bad):
 
 
 # ---------- Non-mutation sanity ----------
+
 
 def test_functions_do_not_mutate_inputs():
     # These funcs only take numbers; this is a lightweight sanity check
