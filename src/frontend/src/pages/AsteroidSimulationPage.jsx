@@ -48,7 +48,7 @@ const AsteroidSimulationPage = () => {
     const [selectedAsteroid, setSelectedAsteroid] = useState('bennu')
     const [czmlSource, setCzmlSource] = useState(null)
     const [asteroidSize, setAsteroidSize] = useState(500) // Size in meters
-    const [cartesianInput, setCartesianInput] = useState('[0, 6378137, 0, 0]') // Cartesian coordinates input
+    const [cartesianInput, setCartesianInput] = useState('[0, 0, 0, 100000]') // Cartographic degrees input (time, lon, lat, alt)
     const fileInputRef = useRef(null)
 
     // Calculate scale factor based on asteroid size in meters
@@ -219,7 +219,7 @@ const AsteroidSimulationPage = () => {
                     throw new Error('Input must be an array')
                 }
             } catch {
-                alert('Invalid Cartesian format. Please provide a valid array like [0, 6378137, 0, 0]')
+                alert('Invalid format. Please provide a valid array like [0, 0, 0, 100000] (time, longitude, latitude, altitude)')
                 return
             }
 
@@ -245,8 +245,7 @@ const AsteroidSimulationPage = () => {
                         epoch: "2024-10-05T00:00:00Z",
                         interpolationAlgorithm: "LAGRANGE",
                         interpolationDegree: 5,
-                        referenceFrame: "INERTIAL",
-                        cartesian: cartesianArray
+                        cartographicDegrees: cartesianArray
                     },
                     label: {
                         text: "Near-Earth Asteroid",
@@ -398,18 +397,18 @@ const AsteroidSimulationPage = () => {
                         </p>
                     </div>
 
-                    {/* Cartesian Coordinates Input */}
+                    {/* Cartographic Degrees Input */}
                     <div className="space-y-2">
-                        <Label className="text-slate-300">Cartesian Coordinates</Label>
+                        <Label className="text-slate-300">Cartographic Degrees</Label>
                         <Input
                             type="text"
                             value={cartesianInput}
                             onChange={(e) => setCartesianInput(e.target.value)}
-                            placeholder="[0, 6378137, 0, 0]"
+                            placeholder="[0, 0, 0, 100000]"
                             className="bg-slate-800 border-slate-600 text-slate-100 font-mono text-sm"
                         />
                         <p className="text-xs text-slate-400">
-                            Enter array format: [time, x, y, z, ...]
+                            Enter array format: [time, longitude, latitude, altitude, ...]
                         </p>
                     </div>
 
