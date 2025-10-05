@@ -118,8 +118,8 @@ def calculate_crater_diameter_transient(E_mt: float, material_type: str) -> floa
     return crater_diameter_transient_m
 
 
-def calculate_landing_time(staring_height_m: float, velocity_m_s: float) -> float:
-    landing_time_s = (
+def calculate_fall_time(staring_height_m: float, velocity_m_s: float) -> float:
+    fall_time_s = (
         math.sqrt(
             velocity_m_s**2 / EARTH_GRAVITATIONAL_CONSTANT**2
             + 2 * staring_height_m / EARTH_GRAVITATIONAL_CONSTANT
@@ -127,7 +127,7 @@ def calculate_landing_time(staring_height_m: float, velocity_m_s: float) -> floa
         - velocity_m_s / EARTH_GRAVITATIONAL_CONSTANT
     )
 
-    return landing_time_s
+    return fall_time_s
 
 
 def calculate_rings(
@@ -169,17 +169,35 @@ def calculate_ring_radius(
     return ring_radius_m
 
 
-def get_asteroid_trajecotry_coordinates(entry_angle_deg: float) -> float:
+def calculate_asteroid_fall_trajecotry_coordinates(
+    azimuth_angle_deg: float,
+    entry_angle_deg: float,
+    entry_velocity_m_s: float,
+    fall_time_s: float,
+) -> float:
     asteroid_coordinates = []
 
-    for step in np.arange(0, 360, 0.1):
-        r = SEMI_MAJOR_AXIS_ECCENTRY_RATIO / (1 - 0.0167 * math.cos(step))
+    for time_moment_s in np.arange(0, fall_time_s, 1):
+        inverted_time_moment_s = fall_time_s - time_moment_s
 
-        x = r * math.cos(step)
-        y = r * math.sin(step) * math.cos(entry_angle_deg)
-        z = r * math.sin(step) * math.sin(entry_angle_deg)
+        h = (
+            entry_velocity_m_s * inverted_time_moment_s
+            + 0.5 * EARTH_GRAVITATIONAL_CONSTANT * inverted_time_moment_s**2
+        )
 
-        asteroid_coordinates.append((x, y, z))
+        x_m = (
+            h * math.cos(azimuth_angle_deg) / math.tan(entry_angle_deg) + EARTH_RADIUS_M
+        )
+        y_m = (
+            h * math.sin(azimuth_angle_deg) / math.tan(entry_angle_deg) + EARTH_RADIUS_M
+        )
+        z_m = h + EARTH_RADIUS_M
+
+        # Weird way to store, but cezium wants this
+        asteroid_coordinates.append(time_moment_s)
+        asteroid_coordinates.append(x_m)
+        asteroid_coordinates.append(y_m)
+        asteroid_coordinates.append(z_m)
 
     return asteroid_coordinates
 

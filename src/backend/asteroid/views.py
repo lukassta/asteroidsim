@@ -7,12 +7,12 @@ from asteroid.models import Asteroid
 from asteroid.serializers import BriefAsteroidSerializer
 
 from .calculations import (caclulate_asteroid_impact_mass,
+                           calculate_asteroid_fall_trajecotry_coordinates,
                            calculate_crater_depth_final,
                            calculate_crater_diameter_final,
                            calculate_crater_diameter_transient,
-                           calculate_impact_energy, calculate_rings,
-                           calculate_landing_time,
-                           get_population_in_radius)
+                           calculate_fall_time, calculate_impact_energy,
+                           calculate_rings, get_population_in_radius)
 from .constants import KPA_FATALITY_RATE
 from .physics_helpers import calculate_mass, calculate_volume
 from .utils import compute_simulation_id, normalize_params
@@ -41,10 +41,12 @@ class SimulationsComputeView(APIView):
                 "e.g. {'inputs': {...simulation parameters...}}"
             )
 
-        landing_height_m = 120 * 1000  # 12km
+        fall_height_m = 120 * 1000  # 12km
 
         normalized_params = normalize_params(raw_params)
 
+        azimuth_angle_deg = normalized_params.get("azimuth_angle_deg", 0)
+        asteroid_entry_angle_deg = normalized_params.get("entry_angle_deg", 0)
         asteroid_composition = normalized_params.get("material_type", 0)
         asteroid_density_kg_m3 = normalized_params.get("density_kg_m3", 0)
         asteroid_diameter_m = normalized_params.get("diameter_m", 0)
@@ -52,14 +54,14 @@ class SimulationsComputeView(APIView):
         lon = normalized_params.get("lon", 0)
         entry_velocity_m_s = normalized_params.get("entry_velocity_m_s", 0)
 
-        landing_time_s = calculate_landing_time(landing_height_m, entry_velocity_m_s)
+        fall_time_s = calculate_fall_time(fall_height_m, entry_velocity_m_s)
 
         asteroid_volume_m3 = calculate_volume(asteroid_diameter_m)
 
         asteroid_mass_kg = calculate_mass(asteroid_volume_m3, asteroid_density_kg_m3)
 
         asteroid_mass_on_impact_kg = caclulate_asteroid_impact_mass(
-            asteroid_mass_kg, entry_velocity_m_s, landing_time_s, asteroid_density_kg_m3
+            asteroid_mass_kg, entry_velocity_m_s, fall_time_s, asteroid_density_kg_m3
         )
 
         impact_energy_Mt_tnt = calculate_impact_energy(
@@ -130,6 +132,10 @@ class SimulationsComputeView(APIView):
         kpa_20_casulties = kpa_20_population * KPA_FATALITY_RATE.get("kpa_20", 0)
         kpa_10_casulties = kpa_10_population * KPA_FATALITY_RATE.get("kpa_10", 0)
         kpa_3_casulties = kpa_3_population * KPA_FATALITY_RATE.get("kpa_3", 0)
+
+        asteroid_fall_coordinates = calculate_asteroid_fall_trajecotry_coordinates(
+            azimuth_angle_deg, asteroid_entry_angle_deg, entry_velocity_m_s, fall_time_s
+        )
 
         total_casulties = (
             crater_casulties
@@ -227,6 +233,9 @@ class SimulationsComputeView(APIView):
                 },
                 "totals": {"total_estimated_deaths": total_casulties},
             },
+            "asteroid_fall_coordinates": [
+                asteroid_fall_coordinates,
+            ],
             "meta": {
                 "units": "SI; lat/lon degrees WGS-84",
                 "notes": [
