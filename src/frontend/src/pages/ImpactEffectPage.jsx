@@ -18,26 +18,41 @@ export default function ImpactEffectPage() {
 
     // Reset Cesium viewer to globe view when component mounts
     useEffect(() => {
-        if (!viewer) return;
-
         // Show the globe
         viewer.scene.globe.show = true;
-        
+
         // Show the atmosphere (blue sky)
         viewer.scene.skyAtmosphere.show = true;
 
         // Show the skybox
         viewer.scene.skyBox.show = true;
 
+        // Remove any asteroid entities
+        viewer.entities.removeAll();
+
         // Release the camera from lookAt mode
         viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
 
-        // Reset camera controls to default for Earth viewing
+        // Reset camera to default globe view
+        viewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(0, 20, 20000000),
+            duration: 0.0
+        });
+
+        // Reset camera controls to default for Earth rotation
         viewer.scene.screenSpaceCameraController.enableRotate = true;
-        viewer.scene.screenSpaceCameraController.enableTranslate = true;
+        viewer.scene.screenSpaceCameraController.enableTranslate = false;
         viewer.scene.screenSpaceCameraController.enableZoom = true;
         viewer.scene.screenSpaceCameraController.enableTilt = true;
         viewer.scene.screenSpaceCameraController.enableLook = false;
+
+        // Set rotation event types - left drag for rotation only
+        viewer.scene.screenSpaceCameraController.rotateEventTypes = [
+            Cesium.CameraEventType.LEFT_DRAG
+        ];
+
+        // Clear translate event types to prevent panning
+        viewer.scene.screenSpaceCameraController.translateEventTypes = [];
     }, [viewer]);
 
     useEffect(() => {
@@ -160,7 +175,7 @@ export default function ImpactEffectPage() {
         // Add pressure rings
         rings.forEach((ring, index) => {
             const color = colors[index] || Cesium.Color.GRAY;
-            
+
             // Create the ring ellipse
             const ringEntity = viewer.entities.add({
                 position: Cesium.Cartesian3.fromDegrees(center.lon, center.lat),
@@ -174,31 +189,31 @@ export default function ImpactEffectPage() {
                 },
             });
             entitiesRef.current.push(ringEntity);
-            
+
             // Calculate position on the ring's circumference (45 degrees from north)
             const bearing = 45; // degrees from north
             const distance = ring.radius_m;
-            
+
             // Calculate the position on the ring using geodesic calculation
             const earthRadius = 6371000; // meters
             const angularDistance = distance / earthRadius;
             const bearingRad = Cesium.Math.toRadians(bearing);
             const latRad = Cesium.Math.toRadians(center.lat);
             const lonRad = Cesium.Math.toRadians(center.lon);
-            
+
             const newLatRad = Math.asin(
                 Math.sin(latRad) * Math.cos(angularDistance) +
                 Math.cos(latRad) * Math.sin(angularDistance) * Math.cos(bearingRad)
             );
-            
+
             const newLonRad = lonRad + Math.atan2(
                 Math.sin(bearingRad) * Math.sin(angularDistance) * Math.cos(latRad),
                 Math.cos(angularDistance) - Math.sin(latRad) * Math.sin(newLatRad)
             );
-            
+
             const labelLat = Cesium.Math.toDegrees(newLatRad);
             const labelLon = Cesium.Math.toDegrees(newLonRad);
-            
+
             // Add label at the calculated position on the ring
             const labelEntity = viewer.entities.add({
                 position: Cesium.Cartesian3.fromDegrees(labelLon, labelLat),
