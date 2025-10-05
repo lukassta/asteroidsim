@@ -50,7 +50,7 @@ const AsteroidSelectPage = () => {
     }
 
     // Extract parameters
-    const { diameter, density, velocityKm, entryAngle, azimuth, aimPoint, materialType } = params;
+    const { diameter, density, velocityKm, entryAngle, azimuth, lat, lon, materialType } = params;
 
     // Format data according to API specification
     const requestData = {
@@ -61,10 +61,8 @@ const AsteroidSelectPage = () => {
         entry_speed_m_s: velocityKm * 1000, // Convert km/s to m/s
         entry_angle_deg: entryAngle,
         azimuth_deg: azimuth,
-        aim_point: {
-          lat: aimPoint?.lat || impactLocation?.latitude || 0,
-          lon: aimPoint?.lon || impactLocation?.longitude || 0
-        }
+        lat: lat || impactLocation?.latitude || 0,
+        lon: lon || impactLocation?.longitude || 0
       }
     };
 
