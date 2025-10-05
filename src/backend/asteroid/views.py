@@ -1,3 +1,6 @@
+from typing import Any, Dict
+
+from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
@@ -6,6 +9,7 @@ from rest_framework.views import APIView
 from asteroid.models import Asteroid
 from asteroid.serializers import BriefAsteroidSerializer
 
+from .api_calls import call_sbdb_lookup, extract_spkid
 from .calculations import (caclulate_asteroid_impact_mass,
                            calculate_asteroid_fall_trajecotry_coordinates,
                            calculate_crater_depth_final,
@@ -13,6 +17,7 @@ from .calculations import (caclulate_asteroid_impact_mass,
                            calculate_crater_diameter_transient,
                            calculate_fall_time, calculate_impact_energy,
                            calculate_rings, get_population_in_radius)
+
 from .constants import KPA_FATALITY_RATE
 from .physics_helpers import calculate_mass, calculate_volume
 from .utils import compute_simulation_id, normalize_params
@@ -63,6 +68,7 @@ class SimulationsComputeView(APIView):
         asteroid_mass_on_impact_kg = caclulate_asteroid_impact_mass(
             asteroid_mass_kg, entry_velocity_m_s, fall_time_s, asteroid_density_kg_m3
         )
+
 
         impact_energy_Mt_tnt = calculate_impact_energy(
             asteroid_mass_on_impact_kg, entry_velocity_m_s
@@ -132,6 +138,7 @@ class SimulationsComputeView(APIView):
         kpa_20_casulties = kpa_20_population * KPA_FATALITY_RATE.get("kpa_20", 0)
         kpa_10_casulties = kpa_10_population * KPA_FATALITY_RATE.get("kpa_10", 0)
         kpa_3_casulties = kpa_3_population * KPA_FATALITY_RATE.get("kpa_3", 0)
+
 
         asteroid_fall_coordinates = calculate_asteroid_fall_trajecotry_coordinates(
             azimuth_angle_deg, asteroid_entry_angle_deg, entry_velocity_m_s, fall_time_s
@@ -253,3 +260,19 @@ class SimulationsComputeView(APIView):
 class SimulationsFetchView(APIView):
     def get(self, request, simulation_id):
         pass
+
+
+class NeoIdView(APIView):
+    def get(self, request):
+        name = (request.query_params.get("name") or "").strip()
+
+        if not name:
+            return JsonResponse(
+                {"detail": "Query parameter 'name' is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        payload = call_sbdb_lookup(name)
+        id = extract_spkid(payload)
+
+        return Response({"neo_id": id}, status=status.HTTP_200_OK)

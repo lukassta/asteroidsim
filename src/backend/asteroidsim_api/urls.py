@@ -20,4 +20,9 @@ urlpatterns = [
         views.SimulationsFetchView.as_view(),
         name="simulations_fetch_view",
     ),
+    path(
+        "api/neo-id/",
+        views.NeoIdView.as_view(),
+        name="neo_id_view",
+    ),
 ]
