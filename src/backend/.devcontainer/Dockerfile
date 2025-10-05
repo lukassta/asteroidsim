@@ -12,6 +12,17 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
+RUN apt-get update && apt-get install -y \
+    g++ \
+    gcc \
+    libgdal-dev \
+    gdal-bin \
+    libproj-dev \
+    proj-data \
+    proj-bin \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --upgrade pip
 
 # Copy and install dependencies
