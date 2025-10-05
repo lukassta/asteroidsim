@@ -9,11 +9,6 @@ from pyproj import Geod, Transformer
 from .constants import *
 from .utils import as_finite_positive_float
 
-
-# @lukas
-# --------- maybe call this file metrics.py and keep it strictly for functions that compute metrics?
-# --------- also, we should probably have similar styled functions, maybe im doing too much with the type hints
-# and as_finite_positive_float(), but i feel like an app like this should have the most robust calculation functions possible
 def get_population_in_area(latitude, longtitude, radius):
     """
     Inputs: impact longtitude, impact latitude, impact radius (m)
@@ -208,8 +203,6 @@ def calculate_crater_depth_final(D_f_m: float) -> float:
     crater_depth_final_m = D_f_m_validated * SIMPLE_CRATER_DEPTH_FACTOR
     return crater_depth_final_m
 
-
-# AI says this is incorrect?
 def calculate_ring_radius(
     E_mt: float, pressure_pa: float, asteroid_diameter_m: float, material_type: str
 ) -> float:
@@ -254,3 +247,6 @@ def caclulate_asteroid_impact_mass(mass, velocity, time, asteroid_density):
         mass = 0
 
     return mass
+
+def calculate_trajectory():
+    pass
