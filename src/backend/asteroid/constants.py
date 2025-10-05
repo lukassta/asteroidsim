@@ -39,3 +39,4 @@ BLAST_RADIUS_SF: Dict[str, float] = {
 }
 
 WGS84 = Geod(ellps="WGS84")
+BLAST_RADIUS_SF: Dict[str, float] = {"sedimentary": 2.5, "crystalline": 3, "water": 2}
