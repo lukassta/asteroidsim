@@ -31,7 +31,11 @@ function CesiumViewer() {
             navigationHelpButton: false,
             animation: false,
             timeline: false,
+            msaaSamples: 4, // Enable MSAA for better anti-aliasing
         })
+        
+        // Disable FXAA which can cause pixelated noise
+        viewerRef.current.scene.postProcessStages.fxaa.enabled = false
 
 
 

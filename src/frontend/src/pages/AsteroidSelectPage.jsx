@@ -181,6 +181,7 @@ const AsteroidSelectPage = () => {
       onLaunch={handleAsteroidLaunch} 
       impactLocation={impactLocation}
       onAsteroidTypeChange={setCurrentAsteroidType}
+      currentAsteroidType={currentAsteroidType}
     />
   )
 };
