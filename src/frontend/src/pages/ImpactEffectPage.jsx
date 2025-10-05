@@ -16,6 +16,30 @@ export default function ImpactEffectPage() {
     const location = useLocation();
     const simulationData = location.state?.simulationData;
 
+    // Reset Cesium viewer to globe view when component mounts
+    useEffect(() => {
+        if (!viewer) return;
+
+        // Show the globe
+        viewer.scene.globe.show = true;
+        
+        // Show the atmosphere (blue sky)
+        viewer.scene.skyAtmosphere.show = true;
+
+        // Show the skybox
+        viewer.scene.skyBox.show = true;
+
+        // Release the camera from lookAt mode
+        viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+
+        // Reset camera controls to default for Earth viewing
+        viewer.scene.screenSpaceCameraController.enableRotate = true;
+        viewer.scene.screenSpaceCameraController.enableTranslate = true;
+        viewer.scene.screenSpaceCameraController.enableZoom = true;
+        viewer.scene.screenSpaceCameraController.enableTilt = true;
+        viewer.scene.screenSpaceCameraController.enableLook = false;
+    }, [viewer]);
+
     useEffect(() => {
         // If we have data from navigation state (POST request), use it
         if (simulationData) {
